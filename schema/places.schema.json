@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Poom search places",
+  "type": "object",
+  "required": ["places"],
+  "properties": {
+    "places": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "name_ko", "name_en", "gu", "location"],
+        "properties": {
+          "kind": { "enum": ["gu", "dong", "station", "school", "daycare"] },
+          "location": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 }
+        }
+      }
+    }
+  }
+}

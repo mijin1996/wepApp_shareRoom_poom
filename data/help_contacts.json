@@ -1,0 +1,11 @@
+{
+  "contacts": [
+    { "number": "112", "name_ko": "경찰 (위급)", "name_en": "Police (emergency)", "for": ["ko", "en"] },
+    { "number": "119", "name_ko": "화재 · 구급", "name_en": "Fire · Ambulance", "for": ["en"] },
+    { "number": "1366", "name_ko": "여성 긴급전화 (24시간)", "name_en": "Women's Emergency Hotline (24h)", "for": ["ko"] },
+    { "number": "1345", "name_ko": "외국인종합안내센터 (다국어)", "name_en": "Immigration Contact Center (multilingual)", "for": ["en"] },
+    { "number": "15771366", "name_ko": "다누리콜센터 (다국어 24시간)", "name_en": "Danuri Call Center (multilingual, 24h)", "for": ["en"] },
+    { "number": "129", "name_ko": "보건복지상담센터", "name_en": "Health & Welfare Call Center", "for": ["ko"] },
+    { "number": "15774206", "name_ko": "가족상담전화", "name_en": "Family Counseling", "for": ["ko"] }
+  ]
+}

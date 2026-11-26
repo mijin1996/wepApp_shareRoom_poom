@@ -1,0 +1,10 @@
+{
+  "kinds": [
+    { "id": "bug", "icon": "🐞", "name_ko": "앱 오류", "name_en": "App error", "owner": "developer", "deadline_hours": 72 },
+    { "id": "usability", "icon": "🧭", "name_ko": "어려워요", "name_en": "Confusing", "owner": "pm", "deadline_hours": 72 },
+    { "id": "house", "icon": "🏠", "name_ko": "집 · 생활", "name_en": "House · Living", "owner": "operator", "deadline_hours": 24 },
+    { "id": "payment", "icon": "💳", "name_ko": "계약 · 결제", "name_en": "Contract · Payment", "owner": "operator", "deadline_hours": 72 },
+    { "id": "safety", "icon": "🛡", "name_ko": "안전", "name_en": "Safety", "owner": "operator", "deadline_hours": 1 },
+    { "id": "idea", "icon": "💡", "name_ko": "바라는 점", "name_en": "Suggestion", "owner": "pm", "deadline_hours": 72 }
+  ]
+}

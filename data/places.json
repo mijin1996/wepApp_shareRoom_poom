@@ -1,0 +1,28 @@
+{
+  "places": [
+    { "id": "gu-mapo", "kind": "gu", "name_ko": "마포구", "name_en": "Mapo-gu", "gu": "마포구", "location": [37.5663, 126.9019] },
+    { "id": "gu-eunpyeong", "kind": "gu", "name_ko": "은평구", "name_en": "Eunpyeong-gu", "gu": "은평구", "location": [37.6027, 126.9291] },
+    { "id": "gu-gwanak", "kind": "gu", "name_ko": "관악구", "name_en": "Gwanak-gu", "gu": "관악구", "location": [37.4784, 126.9516] },
+    { "id": "gu-nowon", "kind": "gu", "name_ko": "노원구", "name_en": "Nowon-gu", "gu": "노원구", "location": [37.6542, 127.0568] },
+    { "id": "gu-songpa", "kind": "gu", "name_ko": "송파구", "name_en": "Songpa-gu", "gu": "송파구", "location": [37.5145, 127.1059] },
+    { "id": "gu-gangseo", "kind": "gu", "name_ko": "강서구", "name_en": "Gangseo-gu", "gu": "강서구", "location": [37.5509, 126.8495] },
+    { "id": "gu-jungnang", "kind": "gu", "name_ko": "중랑구", "name_en": "Jungnang-gu", "gu": "중랑구", "location": [37.6063, 127.0925] },
+    { "id": "gu-yeongdeungpo", "kind": "gu", "name_ko": "영등포구", "name_en": "Yeongdeungpo-gu", "gu": "영등포구", "location": [37.5264, 126.8962] },
+    { "id": "dong-mangwon", "kind": "dong", "name_ko": "망원동", "name_en": "Mangwon-dong", "gu": "마포구", "location": [37.5556, 126.9019] },
+    { "id": "dong-bulgwang", "kind": "dong", "name_ko": "불광동", "name_en": "Bulgwang-dong", "gu": "은평구", "location": [37.6105, 126.9300] },
+    { "id": "dong-sillim", "kind": "dong", "name_ko": "신림동", "name_en": "Sillim-dong", "gu": "관악구", "location": [37.4842, 126.9297] },
+    { "id": "dong-sanggye", "kind": "dong", "name_ko": "상계동", "name_en": "Sanggye-dong", "gu": "노원구", "location": [37.6610, 127.0730] },
+    { "id": "st-mangwon", "kind": "station", "name_ko": "망원역", "name_en": "Mangwon Station", "gu": "마포구", "location": [37.5560, 126.9104] },
+    { "id": "st-hapjeong", "kind": "station", "name_ko": "합정역", "name_en": "Hapjeong Station", "gu": "마포구", "location": [37.5495, 126.9139] },
+    { "id": "st-bulgwang", "kind": "station", "name_ko": "불광역", "name_en": "Bulgwang Station", "gu": "은평구", "location": [37.6104, 126.9298] },
+    { "id": "st-sillim", "kind": "station", "name_ko": "신림역", "name_en": "Sillim Station", "gu": "관악구", "location": [37.4842, 126.9297] },
+    { "id": "st-nowon", "kind": "station", "name_ko": "노원역", "name_en": "Nowon Station", "gu": "노원구", "location": [37.6551, 127.0613] },
+    { "id": "sc-mangwon-e", "kind": "school", "name_ko": "망원초등학교", "name_en": "Mangwon Elementary School", "gu": "마포구", "location": [37.5583, 126.9058] },
+    { "id": "sc-bulgwang-e", "kind": "school", "name_ko": "불광초등학교", "name_en": "Bulgwang Elementary School", "gu": "은평구", "location": [37.6131, 126.9262] },
+    { "id": "sc-bulgwang-m", "kind": "school", "name_ko": "불광중학교", "name_en": "Bulgwang Middle School", "gu": "은평구", "location": [37.6150, 126.9310] },
+    { "id": "sc-sillim-e", "kind": "school", "name_ko": "신림초등학교", "name_en": "Sillim Elementary School", "gu": "관악구", "location": [37.4870, 126.9265] },
+    { "id": "sc-hongik-u", "kind": "school", "name_ko": "홍익대학교", "name_en": "Hongik University", "gu": "마포구", "location": [37.5509, 126.9250] },
+    { "id": "dc-mangwon", "kind": "daycare", "name_ko": "망원 구립어린이집", "name_en": "Mangwon Public Daycare", "gu": "마포구", "location": [37.5562, 126.9031] },
+    { "id": "dc-bulgwang", "kind": "daycare", "name_ko": "불광 국공립어린이집", "name_en": "Bulgwang Public Daycare", "gu": "은평구", "location": [37.6110, 126.9270] }
+  ]
+}
