@@ -181,7 +181,13 @@ export class RoomService
 
         let placeMatch: ((house: House) => boolean) | undefined;
         let placeLocation: LatLng | undefined;
-        if (query.placeId)
+        if (query.placeId?.startsWith('house:'))
+        {
+            // 하우스 이름으로 고른 경우
+            const houseId = query.placeId.slice('house:'.length);
+            placeMatch = (house) => house.id === houseId;
+        }
+        else if (query.placeId)
         {
             const places = await this._housing.getPlacesAsync();
             if (!places.ok)

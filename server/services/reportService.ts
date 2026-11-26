@@ -13,7 +13,8 @@ const MAX_MESSAGE = 500;
 const MAX_TRAIL = 200;
 const HOUR_MS = 60 * 60 * 1000;
 // 사진을 찍으면 안 되는 화면 (POL_REPORT_04)
-const NO_SHOT_SCREENS = ['contract', 'pay', 'movein', 'apply-3', 'document'];
+// 화면 쪽 목록(src/components/ReportSheet.tsx)과 같게 유지
+const NO_SHOT_SCREENS = ['my', 'auth', 'apply', 'admin', 'contract', 'pay', 'movein'];
 
 export interface ReportInput
 {

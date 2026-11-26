@@ -1,0 +1,9 @@
+{
+  "name": "품 Poom — 한부모 가족 쉐어하우스",
+  "short_name": "품 Poom",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFF9F3",
+  "theme_color": "#F6EFE7",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

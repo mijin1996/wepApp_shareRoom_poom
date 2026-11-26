@@ -50,6 +50,16 @@ describe('방 찾기', () =>
         expect(rooms.some((r) => r.roomId === 'r-mw-4')).toBe(false);
     });
 
+    it('하우스 이름으로 고르면 그 하우스 방만', async () =>
+    {
+        const { c } = makeContainer();
+
+        const rooms = unwrap(await c.rooms.searchAsync({ children: [], placeId: 'house:h-sillim' }));
+
+        expect(rooms.length).toBeGreaterThan(0);
+        expect(rooms.every((r) => r.houseId === 'h-sillim')).toBe(true);
+    });
+
     it('지도는 동 단위 묶음만 준다', async () =>
     {
         const { c } = makeContainer();
