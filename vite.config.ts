@@ -39,7 +39,7 @@ function poomApiPlugin(): Plugin
                     return;
                 }
                 const { handleAsync } = await server.ssrLoadModule('/server/app.ts');
-                const body = req.method === 'GET' || req.method === 'HEAD' ? undefined : await readBodyAsync(req);
+                const body = req.method === 'GET' || req.method === 'HEAD' ? undefined : new Uint8Array(await readBodyAsync(req));
                 const headers = new Headers();
                 for (const [key, value] of Object.entries(req.headers))
                 {
