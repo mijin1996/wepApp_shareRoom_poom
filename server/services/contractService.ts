@@ -44,6 +44,14 @@ export class ContractService
         this._clock = clock;
     }
 
+    // 서류는 항상 입주 전 (POL_HOUSE_02): 서명 · 결제 · 입주 안내 모두 서류 확인이 끝나 있어야 한다.
+    // 서명 뒤에 서류를 다시 올리면 확인 전까지 결제 · 입주 안내도 멈춘다.
+    private async _documentCheckedAsync(appId: string): Promise<boolean>
+    {
+        const app = await this._apps.getAsync(appId);
+        return app.ok && app.data.document !== undefined && app.data.document.checked;
+    }
+
     // 서명: 승인 + 서류 확인이 끝나야 함 (DOC_428 · CONTRACT_403)
     public async signAsync(user: User, appId: string, signature: string): Promise<Result<Contract>>
     {
@@ -105,6 +113,10 @@ export class ContractService
         {
             return failure(AppError.AlreadyDone);
         }
+        if (!await this._documentCheckedAsync(contract.data.applicationId))
+        {
+            return failure(AppError.DocumentRequired);
+        }
         const amount = contract.data.deposit + contract.data.rent + contract.data.fee;
         const charge = await this._gateway.chargeAsync(amount, method, contract.data.id);
         if (!charge.approved)
@@ -140,6 +152,10 @@ export class ContractService
         if (!contract)
         {
             return failure(AppError.NotPaid);
+        }
+        if (!await this._documentCheckedAsync(contract.applicationId))
+        {
+            return failure(AppError.DocumentRequired);
         }
         const room = await this._housing.getRoomAsync(contract.roomId);
         if (!room.ok)

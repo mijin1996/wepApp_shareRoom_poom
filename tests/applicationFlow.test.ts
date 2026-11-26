@@ -108,6 +108,32 @@ describe('서류 확인 전에는 계약할 수 없다 (DOC_428)', () =>
         expect(room.status).toBe('occupied');
     });
 
+    it('서명 뒤 서류를 다시 올리면 확인 전까지 결제 · 입주 안내도 DOC_428', async () =>
+    {
+        // Given: 서류 확인 → 서명까지 끝남
+        const { c } = makeContainer();
+        const user = await signUpAsync(c);
+        const app = unwrap(await c.applications.applyAsync(user, { ...baseInput, docType: 'resident_reg' }));
+        unwrap(await c.applications.decideAsync(app.id, 'approve'));
+        unwrap(await c.applications.confirmDocumentAsync(app.id));
+        const contract = unwrap(await c.contracts.signAsync(user, app.id, '김한별'));
+
+        // When: 서류를 다시 올림 (확인 전)
+        unwrap(await c.applications.uploadDocumentAsync(user, app.id, 'single_parent'));
+
+        // Then: 결제가 막힘
+        expect(await c.contracts.payAsync(user, contract.id, 'card')).toEqual({ ok: false, error: AppError.DocumentRequired });
+
+        // 다시 확인되면 결제 → 입주 안내
+        unwrap(await c.applications.confirmDocumentAsync(app.id));
+        unwrap(await c.contracts.payAsync(user, contract.id, 'card'));
+        expect(unwrap(await c.contracts.moveInAsync(user)).address).toContain('망원동');
+
+        // 입주 전에 또 바꾸면 입주 안내(주소)도 멈춤
+        unwrap(await c.applications.uploadDocumentAsync(user, app.id, 'resident_reg'));
+        expect(await c.contracts.moveInAsync(user)).toEqual({ ok: false, error: AppError.DocumentRequired });
+    });
+
     it('승인 전 서명은 CONTRACT_403', async () =>
     {
         const { c } = makeContainer();
