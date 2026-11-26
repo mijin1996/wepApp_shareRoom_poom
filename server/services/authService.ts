@@ -6,7 +6,9 @@ import type { Gender, IdType, User } from '../models/people';
 import type { IRecordRepository } from '../repositories/recordRepository';
 import type { IClock, IIdGenerator, IIdentityVerifier } from '../adapters/adapters';
 
+// 부모 나이 제한 없음 (POL_MEMBER_01). 만 19세 미만 부모는 계약 때 법정대리인 동의를 함께 받는다 (POL_MEMBER_05)
 const ADULT_AGE = 19;
+const OLDEST_BIRTH_YEAR = 1900;
 const MIN_NAME_LENGTH = 2;
 const PHONE_PATTERN = /^\d{10,11}$/;
 
@@ -51,10 +53,12 @@ export class AuthService
         {
             return failure(AppError.InvalidInput);
         }
-        if (this._clock.now().getFullYear() - input.birthYear < ADULT_AGE)
+        const thisYear = this._clock.now().getFullYear();
+        if (input.birthYear < OLDEST_BIRTH_YEAR || input.birthYear > thisYear)
         {
-            return failure(AppError.TooYoung);
+            return failure(AppError.InvalidInput);
         }
+        const minorParent = thisYear - input.birthYear < ADULT_AGE;
 
         const identity = await this._verifier.verifyAsync({ ...input, name, phone });
         const existing = await this._users.findWhereAsync((u) => u.phone === phone);
@@ -70,8 +74,9 @@ export class AuthService
             lang: input.lang,
             idType: input.idType,
             verified: identity.verified,
+            minorParent,
         };
-        const saved = await this._users.saveAsync({ ...user, lang: input.lang });
+        const saved = await this._users.saveAsync({ ...user, lang: input.lang, minorParent });
         if (!saved.ok)
         {
             return saved;

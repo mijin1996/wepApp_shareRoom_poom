@@ -14,7 +14,6 @@ const ERROR_TABLE: Readonly<Record<AppError, IErrorInfo>> = {
     [AppError.InvalidInput]: { status: 400, code: 'COMMON_400' },
     [AppError.Unauthorized]: { status: 401, code: 'AUTH_401' },
     [AppError.Forbidden]: { status: 403, code: 'AUTH_403' },
-    [AppError.TooYoung]: { status: 403, code: 'AUTH_403' },
     [AppError.RoomNotVacant]: { status: 410, code: 'ROOM_410' },
     [AppError.RoomTooSmall]: { status: 422, code: 'ROOM_422' },
     [AppError.HouseholdTooLarge]: { status: 422, code: 'ROOM_422_CONSULT' },

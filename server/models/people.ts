@@ -23,6 +23,7 @@ export interface User
     readonly lang: Lang;
     readonly idType: IdType;
     readonly verified: boolean;       // 외국인 휴대폰 미인증이면 false (POL_MEMBER_04)
+    readonly minorParent: boolean;    // 만 19세 미만 부모 → 계약 때 법정대리인 동의 (POL_MEMBER_05)
 }
 
 export type ApplicationStatus = 'received' | 'approved' | 'on_hold' | 'rejected';

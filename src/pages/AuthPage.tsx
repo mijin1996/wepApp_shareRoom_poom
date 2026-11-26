@@ -52,7 +52,8 @@ export function AuthPage()
                 </label>
                 <label className="field">
                     <span className="field__label">{t('auth.birthYear')}</span>
-                    <input className="input" value={birthYear} onChange={(e) => setBirthYear(e.target.value.replace(/\D/g, '').slice(0, 4))} inputMode="numeric" placeholder="1990" required />
+                    <input className="input" value={birthYear} onChange={(e) => setBirthYear(e.target.value.replace(/\D/g, '').slice(0, 4))} inputMode="numeric" placeholder="1990" required aria-describedby="any-age" />
+                    <span id="any-age" className="muted">{t('auth.anyAge')}</span>
                 </label>
                 <fieldset className="field">
                     <legend className="field__label">{t('auth.gender')}</legend>

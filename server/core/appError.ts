@@ -11,7 +11,6 @@ export enum AppError
     InvalidInput = 'InvalidInput',
     Unauthorized = 'Unauthorized',
     Forbidden = 'Forbidden',
-    TooYoung = 'TooYoung',
 
     // 방 · 신청 규칙
     RoomNotVacant = 'RoomNotVacant',
