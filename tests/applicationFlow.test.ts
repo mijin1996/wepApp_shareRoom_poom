@@ -174,49 +174,41 @@ describe('결제 실패', () =>
 
 describe('본인인증', () =>
 {
-    it('부모 나이 제한은 없다: 만 19세 미만 부모도 인증되고 법정대리인 동의 대상으로 표시된다', async () =>
+    it('부모 나이는 묻지 않는다: 이름 · 휴대폰 · 엄마/아빠 · 신분만으로 인증된다', async () =>
     {
         // Given
         const { c } = makeContainer();
 
         // When
-        const young = unwrap(await c.auth.verifyAsync({ name: '이하늘', phone: '01099998888', birthYear: 2009, gender: 'f', idType: 'kr', lang: 'ko' }));
-        const older = unwrap(await c.auth.verifyAsync({ name: '박보람', phone: '01077776666', birthYear: 1965, gender: 'm', idType: 'kr', lang: 'ko' }));
-
-        // Then
-        expect(young.user.minorParent).toBe(true);
-        expect(older.user.minorParent).toBe(false);
-    });
-
-    it('만 19세 미만 부모도 방을 신청할 수 있다', async () =>
-    {
-        // Given
-        const { c } = makeContainer();
-        const { user } = unwrap(await c.auth.verifyAsync({ name: '이하늘', phone: '01099998888', birthYear: 2009, gender: 'f', idType: 'kr', lang: 'ko' }));
-
-        // When
-        const result = await c.applications.applyAsync(user, baseInput);
+        const result = await c.auth.verifyAsync({ name: '이하늘', phone: '01099998888', gender: 'f', idType: 'kr', lang: 'ko' });
 
         // Then
         expect(result.ok).toBe(true);
+        expect(Object.keys(unwrap(result).user)).not.toContain('birthYear');
     });
 
-    it('있을 수 없는 태어난 해는 InvalidInput', async () =>
+    it('만 24세 이하 자녀가 없으면(빈 가족 · 25세 이상) 신청할 수 없다', async () =>
     {
+        // Given
         const { c } = makeContainer();
+        const user = await signUpAsync(c);
 
-        const future = await c.auth.verifyAsync({ name: '김한별', phone: '01055554444', birthYear: 2099, gender: 'f', idType: 'kr', lang: 'ko' });
-        const ancient = await c.auth.verifyAsync({ name: '김한별', phone: '01055554444', birthYear: 1800, gender: 'f', idType: 'kr', lang: 'ko' });
+        // When
+        const none = await c.applications.applyAsync(user, { ...baseInput, children: [] });
+        const over = await c.applications.applyAsync(user, { ...baseInput, children: [{ ageBand: '25-30' as never, gender: 'f' as const }] });
+        const ok = await c.applications.applyAsync(user, { ...baseInput, children: [{ ageBand: '19-24' as const, gender: 'f' as const }] });
 
-        expect(future).toEqual({ ok: false, error: AppError.InvalidInput });
-        expect(ancient).toEqual({ ok: false, error: AppError.InvalidInput });
+        // Then
+        expect(none).toEqual({ ok: false, error: AppError.InvalidInput });
+        expect(over).toEqual({ ok: false, error: AppError.InvalidInput });
+        expect(ok.ok).toBe(true);
     });
 
     it('전화번호 형식이 틀리면 InvalidInput', async () =>
     {
         const { c } = makeContainer();
 
-        const result = await c.auth.verifyAsync({ name: '김한별', phone: '12', birthYear: 1990, gender: 'f', idType: 'kr', lang: 'ko' });
+        const result = await c.auth.verifyAsync({ name: '김한별', phone: '12', gender: 'f', idType: 'kr', lang: 'ko' });
 
         expect(result).toEqual({ ok: false, error: AppError.InvalidInput });
     });

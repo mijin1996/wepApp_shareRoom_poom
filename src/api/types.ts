@@ -88,7 +88,6 @@ export interface UserView
     readonly lang: 'ko' | 'en';
     readonly idType: 'kr' | 'alien';
     readonly verified: boolean;
-    readonly minorParent: boolean;
 }
 
 export type DocType = 'resident_reg' | 'single_parent' | 'alien_reg';

@@ -2,7 +2,7 @@
 import { AppError } from '../core/appError';
 import { failure, success, type Result } from '../core/result';
 import type { Lang } from '../models/housing';
-import type { Application, Child, DocType, User } from '../models/people';
+import { AGE_BANDS, type Application, type Child, type DocType, type User } from '../models/people';
 import type { IHousingRepository } from '../repositories/housingRepository';
 import type { IRecordRepository } from '../repositories/recordRepository';
 import { checkFit, householdArea } from '../rules/housingStandard';
@@ -46,6 +46,11 @@ export class ApplicationService
     public async applyAsync(user: User, input: ApplyInput): Promise<Result<Application>>
     {
         if (!/^\d{4}-\d{2}-\d{2}$/.test(input.moveInDate) || input.months < 1 || input.months > 24)
+        {
+            return failure(AppError.InvalidInput);
+        }
+        // 자격은 오직 자녀 나이: 만 24세 이하 자녀가 1명 이상 (POL_HOUSE_01). 부모 나이는 보지 않는다
+        if (input.children.length === 0 || input.children.some((child) => !AGE_BANDS.includes(child.ageBand)))
         {
             return failure(AppError.InvalidInput);
         }

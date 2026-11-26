@@ -34,6 +34,6 @@ export function unwrap<T>(result: Result<T>): T
 
 export async function signUpAsync(c: ReturnType<typeof createContainer>, gender: 'f' | 'm' = 'f', phone = '01012345678'): Promise<User>
 {
-    const verified = await c.auth.verifyAsync({ name: '김한별', phone, birthYear: 1990, gender, idType: 'kr', lang: 'ko' });
+    const verified = await c.auth.verifyAsync({ name: '김한별', phone, gender, idType: 'kr', lang: 'ko' });
     return unwrap(verified).user;
 }

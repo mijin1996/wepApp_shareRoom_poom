@@ -159,8 +159,6 @@
   "auth.mock": "Test build: we check what you type instead of a real verification. Don't enter real personal data",
   "auth.name": "Name",
   "auth.phone": "Mobile number",
-  "auth.birthYear": "Birth year",
-  "auth.anyAge": "There is no age limit for parents. If you are under 19, our counselor will help you get your legal guardian's consent when you sign",
   "auth.gender": "I am a",
   "auth.mom": "Mother",
   "auth.dad": "Father",

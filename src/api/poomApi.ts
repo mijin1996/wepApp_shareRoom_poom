@@ -55,7 +55,7 @@ export const poomApi = {
     partner: (body: { kind: string; gu: string; rooms: number; contact: string; message: string }): Promise<ApiResult<{ id: string }>> =>
         requestAsync('/api/partner', { method: 'POST', body }),
 
-    verify: (body: { name: string; phone: string; birthYear: number; gender: string; idType: string; lang: string }): Promise<ApiResult<{ token: string; user: UserView }>> =>
+    verify: (body: { name: string; phone: string; gender: string; idType: string; lang: string }): Promise<ApiResult<{ token: string; user: UserView }>> =>
         requestAsync('/api/auth/verify', { method: 'POST', body }),
     me: (): Promise<ApiResult<UserView>> => requestAsync('/api/me'),
 

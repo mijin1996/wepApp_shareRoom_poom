@@ -98,7 +98,7 @@ export function buildRouter(c: Container, adminKey: string | undefined): Router
         const b = await bodyOf(ctx);
         const gender: Gender = b.gender === 'm' ? 'm' : 'f';
         const idType: IdType = b.idType === 'alien' ? 'alien' : 'kr';
-        return fromResult(await c.auth.verifyAsync({ name: str(b.name), phone: str(b.phone), birthYear: int(b.birthYear), gender, idType, lang: lang(b.lang) }));
+        return fromResult(await c.auth.verifyAsync({ name: str(b.name), phone: str(b.phone), gender, idType, lang: lang(b.lang) }));
     });
     r.add('GET', '/api/me', withUser(c, async (_ctx, user) => okResponse(user)));
 

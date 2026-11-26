@@ -40,7 +40,7 @@ export function createContainer(options: ContainerOptions = {})
         notifier,
         rooms: new RoomService(housing, clock),
         search: new SearchService(housing, memoryRepo()),
-        auth: new AuthService(memoryRepo(), memoryRepo(), new MockIdentityVerifier(), ids, clock),
+        auth: new AuthService(memoryRepo(), memoryRepo(), new MockIdentityVerifier(), ids),
         applications: new ApplicationService(apps, housing, notifier, ids, clock),
         contracts: new ContractService(apps, memoryRepo(), memoryRepo(), housing, gateway, notifier, ids, clock),
         reports: new ReportService(memoryRepo(), notifier, ids, clock),

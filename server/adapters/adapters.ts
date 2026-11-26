@@ -40,7 +40,6 @@ export interface IdentityInput
 {
     readonly name: string;
     readonly phone: string;
-    readonly birthYear: number;
     readonly gender: Gender;
     readonly idType: IdType;
 }

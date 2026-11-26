@@ -4,11 +4,8 @@ import { failure, success, type Result } from '../core/result';
 import type { Lang } from '../models/housing';
 import type { Gender, IdType, User } from '../models/people';
 import type { IRecordRepository } from '../repositories/recordRepository';
-import type { IClock, IIdGenerator, IIdentityVerifier } from '../adapters/adapters';
+import type { IIdGenerator, IIdentityVerifier } from '../adapters/adapters';
 
-// 부모 나이 제한 없음 (POL_MEMBER_01). 만 19세 미만 부모는 계약 때 법정대리인 동의를 함께 받는다 (POL_MEMBER_05)
-const ADULT_AGE = 19;
-const OLDEST_BIRTH_YEAR = 1900;
 const MIN_NAME_LENGTH = 2;
 const PHONE_PATTERN = /^\d{10,11}$/;
 
@@ -16,7 +13,6 @@ export interface VerifyInput
 {
     readonly name: string;
     readonly phone: string;
-    readonly birthYear: number;
     readonly gender: Gender;
     readonly idType: IdType;
     readonly lang: Lang;
@@ -34,31 +30,23 @@ export class AuthService
     private readonly _sessions: IRecordRepository<Session>;
     private readonly _verifier: IIdentityVerifier;
     private readonly _ids: IIdGenerator;
-    private readonly _clock: IClock;
 
-    public constructor(users: IRecordRepository<User>, sessions: IRecordRepository<Session>, verifier: IIdentityVerifier, ids: IIdGenerator, clock: IClock)
+    public constructor(users: IRecordRepository<User>, sessions: IRecordRepository<Session>, verifier: IIdentityVerifier, ids: IIdGenerator)
     {
         this._users = users;
         this._sessions = sessions;
         this._verifier = verifier;
         this._ids = ids;
-        this._clock = clock;
     }
 
     public async verifyAsync(input: VerifyInput): Promise<Result<{ token: string; user: User }>>
     {
         const name = input.name.trim();
         const phone = input.phone.replace(/\D/g, '');
-        if (name.length < MIN_NAME_LENGTH || !PHONE_PATTERN.test(phone) || !Number.isInteger(input.birthYear))
+        if (name.length < MIN_NAME_LENGTH || !PHONE_PATTERN.test(phone))
         {
             return failure(AppError.InvalidInput);
         }
-        const thisYear = this._clock.now().getFullYear();
-        if (input.birthYear < OLDEST_BIRTH_YEAR || input.birthYear > thisYear)
-        {
-            return failure(AppError.InvalidInput);
-        }
-        const minorParent = thisYear - input.birthYear < ADULT_AGE;
 
         const identity = await this._verifier.verifyAsync({ ...input, name, phone });
         const existing = await this._users.findWhereAsync((u) => u.phone === phone);
@@ -74,9 +62,8 @@ export class AuthService
             lang: input.lang,
             idType: input.idType,
             verified: identity.verified,
-            minorParent,
         };
-        const saved = await this._users.saveAsync({ ...user, lang: input.lang, minorParent });
+        const saved = await this._users.saveAsync({ ...user, lang: input.lang });
         if (!saved.ok)
         {
             return saved;

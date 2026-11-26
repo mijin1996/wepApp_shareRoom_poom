@@ -13,7 +13,6 @@ export function AuthPage()
     const { signIn } = useAppState();
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
-    const [birthYear, setBirthYear] = useState('');
     const [gender, setGender] = useState<'f' | 'm'>('f');
     const [idType, setIdType] = useState<'kr' | 'alien'>('kr');
     const [error, setError] = useState<string | undefined>();
@@ -24,7 +23,7 @@ export function AuthPage()
         e.preventDefault();
         setBusy(true);
         setError(undefined);
-        const result = await poomApi.verify({ name, phone, birthYear: Number(birthYear), gender, idType, lang });
+        const result = await poomApi.verify({ name, phone, gender, idType, lang });
         setBusy(false);
         if (!result.ok)
         {
@@ -49,11 +48,6 @@ export function AuthPage()
                 <label className="field">
                     <span className="field__label">{t('auth.phone')}</span>
                     <input className="input" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" autoComplete="tel" placeholder="010-0000-0000" required />
-                </label>
-                <label className="field">
-                    <span className="field__label">{t('auth.birthYear')}</span>
-                    <input className="input" value={birthYear} onChange={(e) => setBirthYear(e.target.value.replace(/\D/g, '').slice(0, 4))} inputMode="numeric" placeholder="1990" required aria-describedby="any-age" />
-                    <span id="any-age" className="muted">{t('auth.anyAge')}</span>
                 </label>
                 <fieldset className="field">
                     <legend className="field__label">{t('auth.gender')}</legend>

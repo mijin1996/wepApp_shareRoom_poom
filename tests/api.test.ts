@@ -60,7 +60,7 @@ describe('API', () =>
     {
         // Given
         const api = makeApi();
-        const auth = await api('POST', '/api/auth/verify', { name: '김한별', phone: '010-1234-5678', birthYear: 1990, gender: 'f', lang: 'ko' });
+        const auth = await api('POST', '/api/auth/verify', { name: '김한별', phone: '010-1234-5678', gender: 'f', lang: 'ko' });
         const token = auth.json.data.token as string;
         const bearer = { authorization: 'Bearer ' + token };
 
