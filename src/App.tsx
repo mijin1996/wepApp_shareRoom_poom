@@ -1,5 +1,8 @@
 // 경로: 한국어는 /, 영어는 /en (POL_LANG_01)
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, MemoryRouter, Route, Routes } from 'react-router-dom';
+
+// 아티팩트는 주소창 경로를 못 쓰므로 메모리 안에서만 화면을 옮긴다
+const Router = __IN_BROWSER_API__ ? MemoryRouter : BrowserRouter;
 import { Layout } from './components/Layout';
 import { LangProvider, type Lang } from './i18n/i18n';
 import { AdminPage } from './pages/AdminPage';
@@ -38,13 +41,13 @@ function LangShell({ lang }: { lang: Lang })
 export function App()
 {
     return (
-        <BrowserRouter>
+        <Router>
             <AppStateProvider>
                 <Routes>
                     <Route path="/en/*" element={<LangShell lang="en" />} />
                     <Route path="/*" element={<LangShell lang="ko" />} />
                 </Routes>
             </AppStateProvider>
-        </BrowserRouter>
+        </Router>
     );
 }

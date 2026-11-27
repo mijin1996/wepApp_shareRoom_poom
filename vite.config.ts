@@ -63,9 +63,15 @@ function poomApiPlugin(): Plugin
 
 const channel = process.env.BUILD_CHANNEL ?? 'test';
 
-export default defineConfig({
+// 아티팩트 빌드(--mode artifact): 서버 없이 한 파일로 돈다. JS 를 하나로 묶고 경로는 상대 경로로
+export default defineConfig(({ mode }) => ({
     plugins: [react(), poomApiPlugin()],
+    base: mode === 'artifact' ? './' : '/',
+    build: mode === 'artifact'
+        ? { outDir: 'dist-artifact', assetsInlineLimit: 100000, rollupOptions: { output: { inlineDynamicImports: true } } }
+        : {},
     define: {
+        __IN_BROWSER_API__: JSON.stringify(mode === 'artifact'),
         __APP_VERSION__: JSON.stringify(packageJson.version),
         __APP_CHANNEL__: JSON.stringify(channel),
         __APP_BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 10)),
@@ -74,4 +80,4 @@ export default defineConfig({
         environment: 'node',
         include: ['tests/**/*.test.ts'],
     },
-});
+}));

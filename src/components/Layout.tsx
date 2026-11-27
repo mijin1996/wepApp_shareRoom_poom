@@ -1,6 +1,7 @@
 // 틀: 위 머리글(넓은 화면 메뉴) · 아래 탭(휴대폰) · 떠 있는 버튼(긴급 도움 · 의견 신고) · 테스트판 표시
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import iconUrl from '../assets/icon.svg';
 import { useLang } from '../i18n/i18n';
 import { note } from '../lib/trail';
 import { HelpSheet } from './HelpSheet';
@@ -61,7 +62,7 @@ export function Layout()
             <a className="skip" href="#main">{lang === 'en' ? 'Skip to content' : '본문으로'}</a>
             <header className="topbar">
                 <Link to={path('/')} className="brand" aria-label="품 Poom">
-                    <img src="/icon.svg" alt="" width={32} height={32} />
+                    <img src={iconUrl} alt="" width={32} height={32} />
                     <span className="brand__name">품 <span className="brand__en">Poom</span></span>
                 </Link>
                 <nav className="topnav" aria-label={t('nav.home')}>

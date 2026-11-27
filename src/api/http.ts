@@ -3,6 +3,17 @@ const SESSION_KEY = 'poom.session';
 const ADMIN_KEY_STORE = 'poom.adminKey';
 const TIMEOUT_MS = 15000;
 
+// 보통은 진짜 서버로 fetch. 아티팩트 빌드에서는 같은 Mock 서버(server/app.ts)를 브라우저 안에서 부른다
+async function sendAsync(path: string, init: RequestInit): Promise<Response>
+{
+    if (__IN_BROWSER_API__)
+    {
+        const { handleAsync } = await import('../../server/app');
+        return handleAsync(new Request(new URL(path, 'http://poom.local').toString(), init), { USE_MOCK: 'true' });
+    }
+    return fetch(path, init);
+}
+
 export type ApiResult<T> = { readonly ok: true; readonly data: T } | { readonly ok: false; readonly code: string };
 
 export function getToken(): string | null
@@ -59,7 +70,7 @@ export async function requestAsync<T>(path: string, options: IRequestOptions = {
     const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
     try
     {
-        const response = await fetch(path, {
+        const response = await sendAsync(path, {
             method: options.method ?? 'GET',
             headers,
             body: options.body === undefined ? undefined : JSON.stringify(options.body),

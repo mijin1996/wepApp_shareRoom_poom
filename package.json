@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite --host",
     "build": "tsc --noEmit && vite build",
+    "build:artifact": "tsc --noEmit && vite build --mode artifact && node scripts/make-artifact.mjs",
     "preview": "vite preview --host",
     "test": "vitest run",
     "test:watch": "vitest",
