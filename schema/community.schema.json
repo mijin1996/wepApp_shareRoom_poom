@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "커뮤니티 예시 글 (Mock 씨앗)",
+  "type": "object",
+  "required": ["questions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "topic", "role", "lang", "title", "body", "answers"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^q-ex-" },
+          "topic": { "enum": ["movein", "life", "kids", "support", "etc"] },
+          "role": { "enum": ["mom", "dad"] },
+          "lang": { "enum": ["ko", "en"] },
+          "days_ago": { "type": "integer", "minimum": 0 },
+          "title": { "type": "string", "minLength": 5, "maxLength": 80 },
+          "body": { "type": "string", "minLength": 5, "maxLength": 1000 },
+          "answers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["role", "official", "body"],
+              "properties": {
+                "role": { "enum": ["mom", "dad", "team"] },
+                "official": { "type": "boolean" },
+                "body": { "type": "string", "minLength": 2, "maxLength": 1000 }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

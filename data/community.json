@@ -1,0 +1,28 @@
+{
+  "$schema": "../schema/community.schema.json",
+  "questions": [
+    {
+      "id": "q-ex-1", "topic": "movein", "role": "mom", "lang": "ko", "days_ago": 3,
+      "title": "서류를 아직 못 뗐는데 신청부터 해도 되나요?",
+      "body": "주민센터 갈 시간이 없어서요. 신청 먼저 하고 서류는 나중에 내도 되는지 궁금해요.",
+      "answers": [
+        { "role": "team", "official": true, "body": "네, 신청은 [나중에 올릴게요]로 먼저 하실 수 있어요. 다만 서류 1장은 입주 전에 꼭 내셔야 하고, 확인이 끝나야 계약할 수 있어요. 정부24 앱 전자증명서도 돼요." },
+        { "role": "mom", "official": false, "body": "저는 정부24 앱에서 바로 떼서 사진으로 올렸어요. 5분 걸렸어요." }
+      ]
+    },
+    {
+      "id": "q-ex-2", "topic": "kids", "role": "dad", "lang": "ko", "days_ago": 2,
+      "title": "불광 근처 초등학교 전학 절차 아시는 분?",
+      "body": "다음 달 입주 예정인데 아이가 초등학교 2학년이에요. 전학은 입주 후에 하면 되나요?",
+      "answers": [
+        { "role": "mom", "official": false, "body": "전입신고 하시면 주민센터에서 배정 통지서를 줘요. 그걸 새 학교에 내면 돼요." }
+      ]
+    },
+    {
+      "id": "q-ex-3", "topic": "support", "role": "mom", "lang": "en", "days_ago": 1,
+      "title": "Can foreign single parents get child support benefits?",
+      "body": "I have an alien registration card. Which benefits can I apply for in Seoul?",
+      "answers": []
+    }
+  ]
+}

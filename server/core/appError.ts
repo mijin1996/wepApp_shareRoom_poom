@@ -30,4 +30,7 @@ export enum AppError
     TooManyReports = 'TooManyReports',
     ShotTooLarge = 'ShotTooLarge',
     ResolutionRequired = 'ResolutionRequired',
+
+    // 커뮤니티 규칙
+    TooManyPosts = 'TooManyPosts',
 }

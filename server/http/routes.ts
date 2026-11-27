@@ -4,6 +4,7 @@ import type { Container } from '../container';
 import type { Lang } from '../models/housing';
 import type { ReportKind, ReportStatus, TrailEntry } from '../models/feedback';
 import type { DocType, Gender, IdType, PayMethod, User } from '../models/people';
+import { TOPICS, type Topic } from '../models/community';
 import faqJson from '../../data/faq.json';
 import helpJson from '../../data/help_contacts.json';
 import kindsJson from '../../data/report_kinds.json';
@@ -175,7 +176,48 @@ export function buildRouter(c: Container, adminKey: string | undefined): Router
         return fromResult(await c.reports.confirmAsync(user, ctx.params.id, b.resolved === true), () => ({ ok: true }));
     }));
 
+    // ---------- 커뮤니티 (묻고 답하기) ----------
+    const topicOf = (value: unknown): Topic | undefined => (TOPICS.includes(value as Topic) ? (value as Topic) : undefined);
+    const answerIdOf = (value: unknown): string | undefined => (typeof value === 'string' && value ? value : undefined);
+    r.add('GET', '/api/community', async (ctx) => fromResult(await c.community.listAsync({ topic: topicOf(ctx.query.get('topic')), q: ctx.query.get('q') ?? '' })));
+    r.add('GET', '/api/community/:id', async (ctx) =>
+    {
+        const viewer = await c.auth.userByTokenAsync(bearer(ctx));
+        return fromResult(await c.community.getAsync(ctx.params.id, viewer.ok ? viewer.data : undefined));
+    });
+    r.add('POST', '/api/community', withUser(c, async (ctx, user) =>
+    {
+        const b = await bodyOf(ctx);
+        return fromResult(await c.community.askAsync(user, { topic: topicOf(b.topic) ?? ('' as Topic), title: str(b.title), body: str(b.body), lang: lang(b.lang) }), (q) => ({ id: q.id }), 201);
+    }));
+    r.add('POST', '/api/community/:id/answers', withUser(c, async (ctx, user) =>
+    {
+        const b = await bodyOf(ctx);
+        return fromResult(await c.community.answerAsync(user, ctx.params.id, str(b.body)), (a) => ({ id: a.id }), 201);
+    }));
+    r.add('POST', '/api/community/:id/solve', withUser(c, async (ctx, user) =>
+    {
+        const b = await bodyOf(ctx);
+        return fromResult(await c.community.solveAsync(user, ctx.params.id, str(b.answerId)), () => ({ ok: true }));
+    }));
+    r.add('POST', '/api/community/:id/flag', withUser(c, async (ctx, user) =>
+    {
+        const b = await bodyOf(ctx);
+        return fromResult(await c.community.flagAsync(user, ctx.params.id, answerIdOf(b.answerId)));
+    }));
+
     // ---------- 운영 콘솔 ----------
+    r.add('GET', '/api/admin/community', withAdmin(key, async () => fromResult(await c.community.listAllAsync())));
+    r.add('POST', '/api/admin/community/:id/answers', withAdmin(key, async (ctx) =>
+    {
+        const b = await bodyOf(ctx);
+        return fromResult(await c.community.officialAnswerAsync(ctx.params.id, str(b.body)), (a) => ({ id: a.id }), 201);
+    }));
+    r.add('POST', '/api/admin/community/:id/hidden', withAdmin(key, async (ctx) =>
+    {
+        const b = await bodyOf(ctx);
+        return fromResult(await c.community.setHiddenAsync(ctx.params.id, answerIdOf(b.answerId), b.hidden === true), () => ({ ok: true }));
+    }));
     r.add('GET', '/api/admin/applications', withAdmin(key, async () => fromResult(await c.applications.listAllAsync())));
     r.add('POST', '/api/admin/applications/:id/decision', withAdmin(key, async (ctx) =>
     {

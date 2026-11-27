@@ -27,6 +27,7 @@ const ERROR_TABLE: Readonly<Record<AppError, IErrorInfo>> = {
     [AppError.TooManyReports]: { status: 429, code: 'REPORT_429' },
     [AppError.ShotTooLarge]: { status: 413, code: 'REPORT_413' },
     [AppError.ResolutionRequired]: { status: 422, code: 'REPORT_422' },
+    [AppError.TooManyPosts]: { status: 429, code: 'COMMUNITY_429' },
 };
 
 const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' };
