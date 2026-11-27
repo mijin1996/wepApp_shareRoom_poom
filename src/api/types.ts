@@ -252,3 +252,23 @@ export interface AdminQuestion extends Omit<QuestionDetail, 'mine' | 'answers'>
     readonly flaggedBy: readonly string[];
     readonly answers: readonly AdminAnswer[];
 }
+
+// ---------- 공지사항 ----------
+export type NoticeCategory = 'service' | 'house' | 'event';
+
+export interface NoticeView
+{
+    readonly id: string;
+    readonly category: NoticeCategory;
+    readonly titleKo: string;
+    readonly bodyKo: string;
+    readonly titleEn: string;
+    readonly bodyEn: string;
+    readonly pinned: boolean;
+    readonly published: boolean;
+    readonly example: boolean;
+    readonly createdAt: string;
+    readonly updatedAt: string;
+}
+
+export type NoticeDraft = Pick<NoticeView, 'category' | 'titleKo' | 'bodyKo' | 'titleEn' | 'bodyEn' | 'pinned' | 'published'>;

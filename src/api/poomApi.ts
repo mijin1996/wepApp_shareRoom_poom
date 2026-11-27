@@ -1,6 +1,6 @@
 // API 모음 (Repository 역할): 화면은 이 함수들만 부르고 경로 · 모양은 몰라도 된다
 import { requestAsync, type ApiResult } from './http';
-import type { AdminQuestion, CommunityTopic, QuestionDetail, QuestionSummaryView, ApplicationView, ChildDraft, ContractView, DemandView, DocType, MapCluster, MetaView, MoveInView, PartnerView, ReportView, RoomView, Suggestion, TrailEntry, UserView } from './types';
+import type { NoticeDraft, NoticeView, AdminQuestion, CommunityTopic, QuestionDetail, QuestionSummaryView, ApplicationView, ChildDraft, ContractView, DemandView, DocType, MapCluster, MetaView, MoveInView, PartnerView, ReportView, RoomView, Suggestion, TrailEntry, UserView } from './types';
 
 export function childrenToQuery(children: readonly ChildDraft[]): string
 {
@@ -82,6 +82,9 @@ export const poomApi = {
     confirmReport: (id: string, resolved: boolean): Promise<ApiResult<{ ok: boolean }>> =>
         requestAsync(`/api/me/reports/${id}/confirm`, { method: 'POST', body: { resolved } }),
 
+    notices: (): Promise<ApiResult<NoticeView[]>> => requestAsync('/api/notices'),
+    notice: (id: string): Promise<ApiResult<NoticeView>> => requestAsync('/api/notices/' + encodeURIComponent(id)),
+
     community: {
         list: (topic: CommunityTopic | '', q: string): Promise<ApiResult<QuestionSummaryView[]>> =>
             requestAsync('/api/community?' + new URLSearchParams({ ...(topic ? { topic } : {}), ...(q ? { q } : {}) }).toString()),
@@ -97,6 +100,10 @@ export const poomApi = {
     },
 
     admin: {
+        notices: (): Promise<ApiResult<NoticeView[]>> => requestAsync('/api/admin/notices', { admin: true }),
+        createNotice: (body: NoticeDraft): Promise<ApiResult<NoticeView>> => requestAsync('/api/admin/notices', { method: 'POST', body, admin: true }),
+        updateNotice: (id: string, body: NoticeDraft): Promise<ApiResult<NoticeView>> =>
+            requestAsync(`/api/admin/notices/${encodeURIComponent(id)}`, { method: 'PUT', body, admin: true }),
         community: (): Promise<ApiResult<AdminQuestion[]>> => requestAsync('/api/admin/community', { admin: true }),
         officialAnswer: (id: string, body: string): Promise<ApiResult<{ id: string }>> =>
             requestAsync(`/api/admin/community/${id}/answers`, { method: 'POST', body: { body }, admin: true }),

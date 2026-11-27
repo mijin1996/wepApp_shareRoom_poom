@@ -2324,3 +2324,69 @@ a
 {
     color: var(--c-primary-dark);
 }
+
+/* ---------- 공지 ---------- */
+.notice-item--pinned
+{
+    border-color: var(--c-primary);
+}
+
+.notice-strip
+{
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 14px;
+    border: 1px solid var(--c-primary-soft);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+}
+
+.notice-strip__item
+{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    min-width: 0;
+    color: inherit;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.notice-strip__title
+{
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+}
+
+.notice-strip__all
+{
+    align-self: flex-end;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.guide-link
+{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: var(--tap);
+    padding: 10px 14px;
+    color: inherit;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.guide-link__text
+{
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+}

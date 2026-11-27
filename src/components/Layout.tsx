@@ -50,12 +50,23 @@ export function Layout()
         setReportOpen(true);
     };
 
+    // 위 메뉴(넓은 화면): 홈 · 방 찾기 · 내 집 · 이용 안내 · 공지 · 집 빌려주실 분 · 커뮤니티(맨 끝)
+    const menu = [
+        { to: '/', label: t('nav.home'), end: true },
+        { to: '/rooms', label: t('nav.rooms'), end: false },
+        { to: '/my', label: t('nav.my'), end: false },
+        { to: '/guide', label: t('nav.guide'), end: false },
+        { to: '/notices', label: t('nav.notices'), end: false },
+        { to: '/partner', label: t('nav.partner'), end: false },
+        { to: '/community', label: t('nav.community'), end: false },
+    ];
+    // 아래 탭(휴대폰): 5칸 — 홈 · 방 찾기 · 내 집 · 공지 · 커뮤니티(맨 끝). 이용 안내는 홈 · 바닥글에서
     const tabs = [
         { to: '/', icon: '🏠', label: t('nav.home'), end: true },
         { to: '/rooms', icon: '🔍', label: t('nav.rooms'), end: false },
-        { to: '/community', icon: '🙋', label: t('nav.community'), end: false },
         { to: '/my', icon: '🔑', label: t('nav.my'), end: false },
-        { to: '/guide', icon: '❔', label: t('nav.guide'), end: false },
+        { to: '/notices', icon: '📢', label: t('nav.notices'), end: false },
+        { to: '/community', icon: '🙋', label: t('nav.community'), end: false },
     ];
 
     return (
@@ -67,10 +78,9 @@ export function Layout()
                     <span className="brand__name">품 <span className="brand__en">Poom</span></span>
                 </Link>
                 <nav className="topnav" aria-label={t('nav.home')}>
-                    {tabs.map((tab) => (
-                        <NavLink key={tab.to} to={path(tab.to)} end={tab.end} className="topnav__link">{tab.label}</NavLink>
+                    {menu.map((item) => (
+                        <NavLink key={item.to} to={path(item.to)} end={item.end} className="topnav__link">{item.label}</NavLink>
                     ))}
-                    <NavLink to={path('/partner')} className="topnav__link">{t('nav.partner')}</NavLink>
                 </nav>
                 <div className="topbar__actions">
                     <button type="button" className="top-action top-action--icon top-action--help" onClick={() => setHelpOpen(true)} aria-label={t('help.button')} title={t('help.button')}>
@@ -98,6 +108,8 @@ export function Layout()
                 <p className="muted">{t('brand.pronounce')}</p>
                 <p className="footer__links">
                     <Link to={path('/guide')}>{t('nav.guide')}</Link>
+                    <Link to={path('/notices')}>{t('nav.notices')}</Link>
+                    <Link to={path('/community')}>{t('nav.community')}</Link>
                     <Link to={path('/partner')}>{t('nav.partner')}</Link>
                     <Link to={path('/admin')}>{t('nav.admin')}</Link>
                 </p>

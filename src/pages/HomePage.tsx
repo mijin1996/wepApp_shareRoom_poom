@@ -7,6 +7,7 @@ import { RoomCard } from '../components/RoomCard';
 import { SearchBar } from '../components/SearchBar';
 import { ErrorBox, Loading } from '../components/States';
 import { useLang, type TextKey } from '../i18n/i18n';
+import { PinnedNoticeStrip } from './NoticePages';
 import { useAppState } from '../state/appState';
 
 const CHIPS: readonly { key: TextKey; filters: RoomFilters }[] = [
@@ -69,6 +70,13 @@ export function HomePage()
                     ))}
                 </div>
             </section>
+
+            <PinnedNoticeStrip />
+            <Link className="card guide-link" to={path('/guide')}>
+                <span aria-hidden="true">❔</span>
+                <span className="guide-link__text">{t('home.guideLink')}</span>
+                <span aria-hidden="true">→</span>
+            </Link>
 
             <section className="section">
                 <div className="section__head">

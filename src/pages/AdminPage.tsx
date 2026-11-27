@@ -2,12 +2,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getAdminKey, setAdminKey } from '../api/http';
 import { poomApi } from '../api/poomApi';
-import type { AdminQuestion, ApplicationView, DemandView, PartnerView, ReportView } from '../api/types';
+import type { AdminQuestion, NoticeDraft, NoticeView, ApplicationView, DemandView, PartnerView, ReportView } from '../api/types';
 import { ErrorBox } from '../components/States';
 import { useLang, type TextKey } from '../i18n/i18n';
 import { describe } from '../lib/trail';
 
-type Tab = 'apps' | 'reports' | 'community' | 'demand' | 'partners';
+type Tab = 'apps' | 'reports' | 'notices' | 'community' | 'demand' | 'partners';
 const STATUSES = ['received', 'checking', 'in_progress', 'done', 'on_hold', 'duplicate'];
 const SEVERITIES = ['critical', 'high', 'normal', 'low'];
 const PRIORITIES = ['P1', 'P2', 'P3'];
@@ -80,6 +80,53 @@ function ReportItem({ report, onSaved }: { report: ReportView; onSaved: () => vo
                 </div>
             </div>
         </details>
+    );
+}
+
+const EMPTY_NOTICE: NoticeDraft = { category: 'service', titleKo: '', bodyKo: '', titleEn: '', bodyEn: '', pinned: false, published: true };
+const NOTICE_CATEGORIES = ['service', 'house', 'event'] as const;
+
+// 공지 쓰기 · 고치기 (한 양식으로). 지우기 대신 "내림" (POL_NOTICE_04)
+function NoticeEditor({ notice, onSaved }: { notice?: NoticeView; onSaved: () => void })
+{
+    const { t } = useLang();
+    const [draft, setDraft] = useState<NoticeDraft>(notice ?? EMPTY_NOTICE);
+    const [error, setError] = useState<string | undefined>();
+    const set = <K extends keyof NoticeDraft>(key: K, value: NoticeDraft[K]) => setDraft({ ...draft, [key]: value });
+
+    const save = async () =>
+    {
+        const r = notice ? await poomApi.admin.updateNotice(notice.id, draft) : await poomApi.admin.createNotice(draft);
+        setError(r.ok ? undefined : r.code);
+        if (r.ok)
+        {
+            if (!notice)
+            {
+                setDraft(EMPTY_NOTICE);
+            }
+            onSaved();
+        }
+    };
+
+    return (
+        <div className="form">
+            <label className="field"><span className="field__label">{t('admin.noticeCategory')}</span>
+                <select className="input" value={draft.category} onChange={(e) => set('category', e.target.value as NoticeDraft['category'])}>
+                    {NOTICE_CATEGORIES.map((c) => <option key={c} value={c}>{t(('notice.cat.' + c) as TextKey)}</option>)}
+                </select></label>
+            <label className="field"><span className="field__label">{t('admin.noticeTitleKo')}</span>
+                <input className="input" value={draft.titleKo} maxLength={80} onChange={(e) => set('titleKo', e.target.value)} /></label>
+            <label className="field"><span className="field__label">{t('admin.noticeBodyKo')}</span>
+                <textarea className="input" rows={4} maxLength={3000} value={draft.bodyKo} onChange={(e) => set('bodyKo', e.target.value)} /></label>
+            <label className="field"><span className="field__label">{t('admin.noticeTitleEn')}</span>
+                <input className="input" value={draft.titleEn} maxLength={160} onChange={(e) => set('titleEn', e.target.value)} /></label>
+            <label className="field"><span className="field__label">{t('admin.noticeBodyEn')}</span>
+                <textarea className="input" rows={3} maxLength={6000} value={draft.bodyEn} onChange={(e) => set('bodyEn', e.target.value)} /></label>
+            <label className="toggle"><input type="checkbox" checked={draft.pinned} onChange={(e) => set('pinned', e.target.checked)} /><span>📌 {t('admin.noticePin')}</span></label>
+            <label className="toggle"><input type="checkbox" checked={draft.published} onChange={(e) => set('published', e.target.checked)} /><span>{t('admin.noticePublished')}</span></label>
+            {error && <ErrorBox code={error} />}
+            <button type="button" className="btn btn--primary btn--small" disabled={draft.titleKo.trim().length < 2 || draft.bodyKo.trim().length < 2} onClick={() => void save()}>{notice ? t('admin.noticeSave') : t('admin.noticeCreate')}</button>
+        </div>
     );
 }
 
@@ -160,11 +207,12 @@ export function AdminPage()
     const [demand, setDemand] = useState<DemandView[]>([]);
     const [partners, setPartners] = useState<PartnerView[]>([]);
     const [community, setCommunity] = useState<AdminQuestion[]>([]);
+    const [notices, setNotices] = useState<NoticeView[]>([]);
     const [error, setError] = useState<string | undefined>();
 
     const load = useCallback(async () =>
     {
-        const [a, r, d, p, q] = await Promise.all([poomApi.admin.applications(), poomApi.admin.reports(), poomApi.admin.demand(), poomApi.admin.partners(), poomApi.admin.community()]);
+        const [a, r, d, p, q, n] = await Promise.all([poomApi.admin.applications(), poomApi.admin.reports(), poomApi.admin.demand(), poomApi.admin.partners(), poomApi.admin.community(), poomApi.admin.notices()]);
         if (!a.ok)
         {
             setError(a.code);
@@ -176,6 +224,7 @@ export function AdminPage()
         setReports(r.ok ? r.data : []);
         setDemand(d.ok ? d.data : []);
         setPartners(p.ok ? p.data : []);
+        setNotices(n.ok ? n.data : []);
         // 신고 많은 글 → 답변 대기 글 → 최신 순
         const needsTeam = (x: AdminQuestion) => !x.answers.some((ans) => ans.official && !ans.hidden);
         const flags = (x: AdminQuestion) => x.flaggedBy.length + x.answers.reduce((sum, ans) => sum + ans.flaggedBy.length, 0);
@@ -226,7 +275,7 @@ export function AdminPage()
                 <button type="button" className="btn btn--ghost btn--small" onClick={() => void load()}>↻ {t('admin.refresh')}</button>
             </div>
             <div className="seg seg--wrap admin-tabs" role="tablist">
-                {(['apps', 'reports', 'community', 'demand', 'partners'] as const).map((k) => (
+                {(['apps', 'reports', 'notices', 'community', 'demand', 'partners'] as const).map((k) => (
                     <button type="button" role="tab" key={k} aria-selected={tab === k} className={tab === k ? 'seg__on' : ''} onClick={() => setTab(k)}>
                         {t(('admin.tab.' + k) as TextKey)}
                         {k === 'reports' && reports.some((r) => r.kind === 'safety' && r.status !== 'done') ? ' 🛡' : ''}
@@ -260,6 +309,27 @@ export function AdminPage()
                 <div className="admin-list">
                     {reports.length === 0 && <p className="muted">{t('admin.empty')}</p>}
                     {reports.map((r) => <ReportItem key={r.id + r.status + r.replies.length} report={r} onSaved={() => void load()} />)}
+                </div>
+            )}
+
+            {tab === 'notices' && (
+                <div className="admin-list">
+                    <details className="card report" open>
+                        <summary className="report__summary"><strong>✏️ {t('admin.noticeNew')}</strong></summary>
+                        <div className="report__body"><NoticeEditor onSaved={() => void load()} /></div>
+                    </details>
+                    {notices.map((n) => (
+                        <details key={n.id + n.updatedAt} className="card report">
+                            <summary className="report__summary">
+                                {n.pinned && <span className="tag">📌</span>}
+                                {!n.published && <span className="tag tag--danger">{t('admin.noticeDown')}</span>}
+                                <span className="tag tag--muted">{t(('notice.cat.' + n.category) as TextKey)}</span>
+                                <span className="report__msg">{n.titleKo}</span>
+                                <span className="muted">{n.updatedAt.slice(0, 16).replace('T', ' ')}</span>
+                            </summary>
+                            <div className="report__body"><NoticeEditor notice={n} onSaved={() => void load()} /></div>
+                        </details>
+                    ))}
                 </div>
             )}
 
