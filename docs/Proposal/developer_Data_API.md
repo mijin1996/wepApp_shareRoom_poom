@@ -15,6 +15,7 @@
 | v0.7 | 2026-11-27 | 검색 · 지도 · 관심 방 · 빈방 알림 · 지역 수요 · 주변 시설 · 후기 · 제휴 문의, `HOUSE` 속성 · 방 목록 필터 | 원하는 지역 · 학교 · 직장 근처로 방을 찾게 함 | 백엔드 개발자 | DB · API · 데이터 파일 |
 | v0.6 | 2026-11-26 | `REPORT` · 상태 기록 · 답장, `API_REPORT_01` ~ `03`, `REPORT_413` · `429` | 민원 · 오류를 끝까지 처리하고 개선 방향을 정하기 위함 | 백엔드 개발자 | DB · API · R2 |
 | v0.5 | 2026-11-26 | `ROOM` 침실 수 · 면적 · 상품, 방 목록 가족 조건, `ROOM_422`, 나이대 6 · 8세 경계 | `POL_ROOM` | 백엔드 개발자 | DB · 방 API · 신청 API |
+| v0.6 | 2026-11-27 | `QUESTION` · `ANSWER`, `API_COMMUNITY_01` ~ `04`, `COMMUNITY_429`, 신청 `situation` · `urgency` | `REQ_041` ~ `045` | 백엔드 개발자 | DB · API |
 | v0.5 | 2026-11-27 | 본인인증에서 태어난 해 · 부모 나이 조건 뺌, 신청은 만 24세 이하 자녀 1명 이상 (`COMMON_400`) | `POL_MEMBER_01` · `POL_HOUSE_01` | 백엔드 개발자 | DB · 본인인증 · 신청 API |
 | v0.4 | 2026-11-26 | `age_band`에 `13-18` · `19-24`, 계약 동거인 | `POL_HOUSE_01` · `POL_HOUSE_07` | 백엔드 개발자 | DB · 신청 API |
 | v0.3 | 2026-11-26 | `DOCUMENT`를 신청에 연결, `API_DOC_01` 경로 · `DOC_428` 추가 | `POL_HOUSE_02` 입주 전 제출 | 백엔드 개발자 | DB · 계약 API |
@@ -78,7 +79,7 @@ erDiagram
 | `API_ROOM_02` | 방 상세 | `GET /api/rooms/:id` | — | room + house(동 단위, 주소 제외) |
 | `API_AUTH_01` | 본인인증 시작 · 완료 | `POST /api/auth/verify` | 인증 업체 토큰 | session |
 | `API_AUTH_02` | 문자 코드 로그인 | `POST /api/auth/otp` | phone, code | session |
-| `API_APPLY_01` | 신청 제출 | `POST /api/applications` | room_id, move_in_date, months, children[], contact_time, memo | id, status |
+| `API_APPLY_01` | 신청 제출 | `POST /api/applications` | room_id, move_in_date, months, children[], contact_time, situation(≤1000자), urgency(now · week · month) | id, status |
 | `API_APPLY_02` | 내 신청 | `GET /api/me/applications` | — | items[] |
 | `API_TOUR_01` | 방 보기 예약 | `POST /api/applications/:id/tour` | type, at | tour |
 | `API_CONTRACT_01` | 계약서 조회 · 서명 | `GET` · `POST /api/contracts/:id/sign` | signature | status |
@@ -94,6 +95,10 @@ erDiagram
 | `API_DEMAND_01` | 지역 알림 (0건 검색) | `POST /api/demand` | gu, dong, household_size, price_band | ok |
 | `API_GUIDE_01` | 후기 · 자주 묻는 질문 | `GET /api/reviews` · `/api/faq` | house_id, lang | items[] |
 | `API_PARTNER_01` | 집 빌려주기 문의 | `POST /api/partner` | kind, gu, building_type, rooms, contact, message | id |
+| `API_COMMUNITY_01` | 질문 목록 · 보기 | `GET /api/community` · `/api/community/:id` | topic, q | items[] (실명 · 사용자 ID 없음, alias 만) |
+| `API_COMMUNITY_02` | 질문 · 답변 쓰기 | `POST /api/community` · `/api/community/:id/answers` | topic, title, body, lang / body | id |
+| `API_COMMUNITY_03` | 해결 표시 · 신고 | `POST /api/community/:id/solve` · `/flag` | answer_id | ok / hidden |
+| `API_COMMUNITY_04` | 운영 콘솔 커뮤니티 | `GET /api/admin/community` · `POST /api/admin/community/:id/answers` · `/hidden` | body / hidden, answer_id | items[] |
 | `API_NOTICE_01` | 공공 공고 | `GET /api/notices` | region, cursor | items[] |
 
 ## 4. 에러 코드

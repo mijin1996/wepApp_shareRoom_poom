@@ -9,7 +9,6 @@
   "nav.admin": "운영 콘솔",
   "nav.lang": "EN",
   "badge.test": "테스트판",
-
   "home.title": "아이와 함께, 이번 주에 들어갈 수 있는 방",
   "home.sub": "서류 1장 · 적은 보증금 · 빈방이면 당일 입주",
   "home.soon": "바로 입주 가능한 방",
@@ -23,7 +22,6 @@
   "home.step3d": "계약 · 결제 후 그날 바로",
   "home.partnerCta": "한부모 가족에게 집을 빌려주실 분을 찾아요",
   "home.seeAll": "모두 보기",
-
   "search.where": "어디로",
   "search.wherePh": "지역 · 역 · 학교",
   "search.when": "언제부터",
@@ -49,7 +47,6 @@
   "chip.mom": "엄마 하우스",
   "chip.dad": "아빠 하우스",
   "chip.english": "영어 상담",
-
   "family.title": "우리 가족",
   "family.parent": "나 (부모)",
   "family.addChild": "+ 자녀 추가",
@@ -66,7 +63,6 @@
   "age.8-12": "8~12세",
   "age.13-18": "13~18세",
   "age.19-24": "19~24세",
-
   "rooms.title": "방 찾기",
   "rooms.count": "방 {n}개",
   "rooms.filter": "필터",
@@ -84,7 +80,6 @@
   "rooms.searchSaved": "빈방 알림을 켰어요",
   "rooms.mapHint": "지도에는 동 단위로만 보여요. 정확한 주소는 계약 · 결제 후에 알려 드려요",
   "rooms.dongAll": "모든 동네",
-
   "filter.title": "필터",
   "filter.house": "하우스",
   "filter.any": "전체",
@@ -103,7 +98,6 @@
   "filter.reset": "초기화",
   "filter.apply": "방 보기",
   "filter.noLimit": "제한 없음",
-
   "card.monthly": "월 {amount}",
   "card.deposit": "보증금 {amount}",
   "card.bedrooms": "침실 {n}",
@@ -115,7 +109,6 @@
   "card.walk": "{place} 걸어서 {min}분",
   "card.mom": "엄마",
   "card.dad": "아빠",
-
   "detail.cost": "비용",
   "detail.deposit": "보증금",
   "detail.rent": "월 임대료",
@@ -153,7 +146,6 @@
   "poi.station": "역",
   "poi.pediatric": "소아과",
   "poi.mart": "시장 · 마트",
-
   "auth.title": "휴대폰 본인인증",
   "auth.sub": "신청하려면 본인인증이 필요해요. 비밀번호는 없어요",
   "auth.mock": "테스트판: 실제 인증 대신 입력값으로 확인해요. 진짜 개인정보는 넣지 마세요",
@@ -167,7 +159,6 @@
   "auth.alien": "외국인 (외국인등록증)",
   "auth.submit": "인증하기",
   "auth.logout": "로그아웃",
-
   "apply.title": "간단 신청",
   "apply.step": "{n} / 3",
   "apply.moveIn": "입주 희망일",
@@ -204,7 +195,6 @@
   "apply.doneSub": "운영 매니저가 2시간 안에 전화드려요",
   "apply.doneNight": "운영 시간(09~21시)이 아니면 내일 오전에 전화드려요",
   "apply.goMy": "내 집에서 진행 보기",
-
   "my.title": "내 집",
   "my.login": "본인인증하고 신청 · 계약을 이어 가세요",
   "my.applications": "신청",
@@ -245,7 +235,6 @@
   "my.reportNotYet": "아직이에요",
   "my.reply": "운영팀 답장",
   "my.remove": "삭제",
-
   "report.button": "의견 · 신고",
   "report.title": "의견 · 신고 보내기",
   "report.kind": "무엇에 대한 건가요?",
@@ -262,11 +251,9 @@
   "report.send": "보내기",
   "report.sent": "보냈어요. 고마워요! 처리되면 알려 드릴게요",
   "report.tooMany": "잠시 뒤 다시 보내 주세요",
-
   "help.button": "긴급 도움",
   "help.title": "긴급 도움",
   "help.sub": "누르면 바로 전화가 걸려요",
-
   "guide.title": "이용 안내",
   "guide.steps": "입주 절차",
   "guide.s1": "방 찾기 — 어디로 · 언제부터 · 누구와",
@@ -275,7 +262,6 @@
   "guide.s4": "계약서 서명 · 결제",
   "guide.s5": "당일 입주",
   "guide.faq": "자주 묻는 질문",
-
   "partner.title": "집 빌려주실 분",
   "partner.sub": "한부모 가족에게 집을 빌려주세요. 관리 · 입주자 응대는 Poom이 합니다",
   "partner.kind": "어떤 분인가요?",
@@ -288,7 +274,6 @@
   "partner.message": "하고 싶은 말",
   "partner.send": "문의 보내기",
   "partner.sent": "문의를 받았어요. 대표가 직접 연락드릴게요",
-
   "admin.title": "운영 콘솔",
   "admin.key": "운영 키",
   "admin.keyHint": "테스트판 키: poom-admin-dev",
@@ -314,7 +299,6 @@
   "admin.empty": "아직 없어요",
   "admin.refresh": "새로고침",
   "admin.demandHint": "검색 결과가 없던 지역 · 생기면 알림 신청 — 다음 하우스 위치 판단",
-
   "common.loading": "불러오는 중…",
   "common.slow": "연결이 느려요",
   "common.retry": "다시 시도",
@@ -327,7 +311,6 @@
   "common.notFound": "페이지를 찾을 수 없어요",
   "common.goHome": "홈으로",
   "common.needLogin": "본인인증이 필요해요",
-
   "error.COMMON_400": "입력값을 다시 확인해 주세요",
   "error.COMMON_404": "찾을 수 없어요",
   "error.COMMON_409": "이미 처리됐어요",
@@ -346,5 +329,52 @@
   "error.REPORT_429": "잠시 뒤 다시 보내 주세요",
   "error.REPORT_413": "사진이 너무 커요",
   "error.REPORT_422": "원인 / 고친 것 / 확인 방법을 모두 적어 주세요",
-  "error.NETWORK": "인터넷 연결을 확인해 주세요"
+  "error.NETWORK": "인터넷 연결을 확인해 주세요",
+  "nav.community": "커뮤니티",
+  "community.title": "묻고 답하기",
+  "community.sub": "입주 · 아이 · 지원 제도, 먼저 살아 본 한부모와 품 운영팀이 답해요",
+  "community.ask": "질문하기",
+  "community.search": "궁금한 것 찾기 (초성도 돼요)",
+  "community.all": "전체",
+  "community.topic.movein": "입주 · 서류",
+  "community.topic.life": "생활 · 하우스",
+  "community.topic.kids": "아이 · 학교",
+  "community.topic.support": "지원 제도",
+  "community.topic.etc": "기타",
+  "community.role.mom": "엄마",
+  "community.role.dad": "아빠",
+  "community.role.team": "품 운영팀",
+  "community.answers": "답변 {n}",
+  "community.official": "운영팀 답변",
+  "community.solved": "해결됨",
+  "community.helped": "도움 됐어요",
+  "community.example": "예시",
+  "community.mine": "내 글",
+  "community.empty": "아직 질문이 없어요. 첫 질문을 남겨 보세요",
+  "community.noAnswer": "아직 답변이 없어요. 운영팀이 하루 안에 답해 드려요",
+  "community.answerLabel": "답변 쓰기",
+  "community.answerPlaceholder": "겪어 본 일이나 아는 것을 나눠 주세요",
+  "community.answerSend": "답변 올리기",
+  "community.loginToWrite": "읽기는 누구나, 글쓰기는 본인인증한 분만 할 수 있어요",
+  "community.loginBtn": "본인인증하고 글쓰기",
+  "community.privacy": "이름 · 전화번호 · 주소 · 아이 이름은 쓰지 마세요. 전화번호 · 이메일은 자동으로 *** 로 가려져요",
+  "community.anonNote": "글에는 실명 대신 \"엄마 · 아빠 + 4글자\"로만 보여요",
+  "community.formTopic": "주제",
+  "community.formTitle": "제목",
+  "community.formBody": "내용",
+  "community.formSend": "질문 올리기",
+  "community.flag": "신고",
+  "community.flagged": "신고했어요. 운영팀이 확인해요",
+  "community.hiddenNow": "신고가 쌓여 숨겨졌어요. 운영팀이 확인해요",
+  "community.markSolved": "도움 됐어요",
+  "community.back": "목록으로",
+  "error.COMMUNITY_429": "잠시 뒤 다시 올려 주세요 (1시간에 질문 5개 · 답변 20개까지)",
+  "admin.tab.community": "커뮤니티",
+  "admin.flags": "신고 {n}",
+  "admin.hiddenTag": "숨김",
+  "admin.hide": "숨기기",
+  "admin.unhide": "다시 보이기",
+  "admin.officialAnswer": "운영팀 답변",
+  "admin.officialSend": "공식 답변 올리기",
+  "admin.waiting": "답변 대기"
 }

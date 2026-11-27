@@ -53,6 +53,7 @@ export function Layout()
     const tabs = [
         { to: '/', icon: '🏠', label: t('nav.home'), end: true },
         { to: '/rooms', icon: '🔍', label: t('nav.rooms'), end: false },
+        { to: '/community', icon: '🙋', label: t('nav.community'), end: false },
         { to: '/my', icon: '🔑', label: t('nav.my'), end: false },
         { to: '/guide', icon: '❔', label: t('nav.guide'), end: false },
     ];

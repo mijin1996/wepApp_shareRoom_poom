@@ -2,12 +2,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getAdminKey, setAdminKey } from '../api/http';
 import { poomApi } from '../api/poomApi';
-import type { ApplicationView, DemandView, PartnerView, ReportView } from '../api/types';
+import type { AdminQuestion, ApplicationView, DemandView, PartnerView, ReportView } from '../api/types';
 import { ErrorBox } from '../components/States';
 import { useLang, type TextKey } from '../i18n/i18n';
 import { describe } from '../lib/trail';
 
-type Tab = 'apps' | 'reports' | 'demand' | 'partners';
+type Tab = 'apps' | 'reports' | 'community' | 'demand' | 'partners';
 const STATUSES = ['received', 'checking', 'in_progress', 'done', 'on_hold', 'duplicate'];
 const SEVERITIES = ['critical', 'high', 'normal', 'low'];
 const PRIORITIES = ['P1', 'P2', 'P3'];
@@ -83,6 +83,72 @@ function ReportItem({ report, onSaved }: { report: ReportView; onSaved: () => vo
     );
 }
 
+// 커뮤니티 글 하나: 신고가 쌓인 글 · 답변 대기 글을 먼저 본다 (POL_COMMUNITY_05 · 06)
+function CommunityItem({ question, onSaved }: { question: AdminQuestion; onSaved: () => void })
+{
+    const { t } = useLang();
+    const [answer, setAnswer] = useState('');
+    const [error, setError] = useState<string | undefined>();
+    const waiting = !question.answers.some((a) => a.official && !a.hidden);
+
+    const toggle = async (hidden: boolean, answerId?: string) =>
+    {
+        await poomApi.admin.setHidden(question.id, hidden, answerId);
+        onSaved();
+    };
+
+    const send = async () =>
+    {
+        const r = await poomApi.admin.officialAnswer(question.id, answer);
+        setError(r.ok ? undefined : r.code);
+        if (r.ok)
+        {
+            setAnswer('');
+            onSaved();
+        }
+    };
+
+    return (
+        <details className="card report">
+            <summary className="report__summary">
+                {question.hidden && <span className="tag tag--danger">{t('admin.hiddenTag')}</span>}
+                {question.flaggedBy.length > 0 && <span className="tag">🚩 {t('admin.flags', { n: question.flaggedBy.length })}</span>}
+                {waiting && <span className="tag tag--muted">{t('admin.waiting')}</span>}
+                <span className="tag tag--muted">{question.topic}</span>
+                <span className="report__msg">{question.title}</span>
+                <span className="muted">{question.alias.role} {question.alias.tag} · {question.createdAt.slice(0, 16).replace('T', ' ')}</span>
+            </summary>
+            <div className="report__body">
+                <p className="admin-situation">{question.body}</p>
+                <div className="btn-row btn-row--start">
+                    <button type="button" className="btn btn--outline btn--small" onClick={() => void toggle(!question.hidden)}>{question.hidden ? t('admin.unhide') : t('admin.hide')}</button>
+                </div>
+                <ul className="qa-answers">
+                    {question.answers.map((a) => (
+                        <li key={a.id} className={'card qa-answer' + (a.official ? ' qa-answer--official' : '')}>
+                            <p className="qa-item__meta">
+                                <strong>{a.official ? t('admin.officialAnswer') : a.alias.role + ' ' + a.alias.tag}</strong>
+                                {a.hidden && <span className="tag tag--danger">{t('admin.hiddenTag')}</span>}
+                                {a.flaggedBy.length > 0 && <span className="tag">🚩 {t('admin.flags', { n: a.flaggedBy.length })}</span>}
+                            </p>
+                            <p className="qa-answer__body">{a.body}</p>
+                            <div className="btn-row btn-row--start">
+                                <button type="button" className="btn btn--ghost btn--small" onClick={() => void toggle(!a.hidden, a.id)}>{a.hidden ? t('admin.unhide') : t('admin.hide')}</button>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+                <label className="field">
+                    <span className="field__label">{t('admin.officialAnswer')}</span>
+                    <textarea className="input" rows={3} maxLength={1000} value={answer} onChange={(e) => setAnswer(e.target.value)} />
+                </label>
+                {error && <ErrorBox code={error} />}
+                <button type="button" className="btn btn--primary btn--small" disabled={answer.trim().length < 2} onClick={() => void send()}>{t('admin.officialSend')}</button>
+            </div>
+        </details>
+    );
+}
+
 export function AdminPage()
 {
     const { t } = useLang();
@@ -93,11 +159,12 @@ export function AdminPage()
     const [reports, setReports] = useState<ReportView[]>([]);
     const [demand, setDemand] = useState<DemandView[]>([]);
     const [partners, setPartners] = useState<PartnerView[]>([]);
+    const [community, setCommunity] = useState<AdminQuestion[]>([]);
     const [error, setError] = useState<string | undefined>();
 
     const load = useCallback(async () =>
     {
-        const [a, r, d, p] = await Promise.all([poomApi.admin.applications(), poomApi.admin.reports(), poomApi.admin.demand(), poomApi.admin.partners()]);
+        const [a, r, d, p, q] = await Promise.all([poomApi.admin.applications(), poomApi.admin.reports(), poomApi.admin.demand(), poomApi.admin.partners(), poomApi.admin.community()]);
         if (!a.ok)
         {
             setError(a.code);
@@ -109,6 +176,10 @@ export function AdminPage()
         setReports(r.ok ? r.data : []);
         setDemand(d.ok ? d.data : []);
         setPartners(p.ok ? p.data : []);
+        // 신고 많은 글 → 답변 대기 글 → 최신 순
+        const needsTeam = (x: AdminQuestion) => !x.answers.some((ans) => ans.official && !ans.hidden);
+        const flags = (x: AdminQuestion) => x.flaggedBy.length + x.answers.reduce((sum, ans) => sum + ans.flaggedBy.length, 0);
+        setCommunity(q.ok ? [...q.data].sort((x, y) => flags(y) - flags(x) || Number(needsTeam(y)) - Number(needsTeam(x))) : []);
     }, []);
 
     useEffect(() =>
@@ -155,11 +226,11 @@ export function AdminPage()
                 <button type="button" className="btn btn--ghost btn--small" onClick={() => void load()}>↻ {t('admin.refresh')}</button>
             </div>
             <div className="seg seg--wrap admin-tabs" role="tablist">
-                {(['apps', 'reports', 'demand', 'partners'] as const).map((k) => (
+                {(['apps', 'reports', 'community', 'demand', 'partners'] as const).map((k) => (
                     <button type="button" role="tab" key={k} aria-selected={tab === k} className={tab === k ? 'seg__on' : ''} onClick={() => setTab(k)}>
                         {t(('admin.tab.' + k) as TextKey)}
                         {k === 'reports' && reports.some((r) => r.kind === 'safety' && r.status !== 'done') ? ' 🛡' : ''}
-                        {k === 'apps' ? ` (${apps.length})` : k === 'reports' ? ` (${reports.length})` : ''}
+                        {k === 'apps' ? ` (${apps.length})` : k === 'reports' ? ` (${reports.length})` : k === 'community' ? ` (${community.length})` : ''}
                     </button>
                 ))}
             </div>
@@ -189,6 +260,13 @@ export function AdminPage()
                 <div className="admin-list">
                     {reports.length === 0 && <p className="muted">{t('admin.empty')}</p>}
                     {reports.map((r) => <ReportItem key={r.id + r.status + r.replies.length} report={r} onSaved={() => void load()} />)}
+                </div>
+            )}
+
+            {tab === 'community' && (
+                <div className="admin-list">
+                    {community.length === 0 && <p className="muted">{t('admin.empty')}</p>}
+                    {community.map((q) => <CommunityItem key={q.id + q.answers.length + String(q.hidden)} question={q} onSaved={() => void load()} />)}
                 </div>
             )}
 

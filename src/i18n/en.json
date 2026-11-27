@@ -9,7 +9,6 @@
   "nav.admin": "Console",
   "nav.lang": "한국어",
   "badge.test": "Test build",
-
   "home.title": "A room for you and your kids — this week",
   "home.sub": "One document · Low deposit · Same-day move-in when vacant",
   "home.soon": "Ready to move in",
@@ -23,7 +22,6 @@
   "home.step3d": "Same day after signing and paying",
   "home.partnerCta": "We're looking for homes for single-parent families",
   "home.seeAll": "See all",
-
   "search.where": "Where",
   "search.wherePh": "Area · station · school",
   "search.when": "From",
@@ -49,7 +47,6 @@
   "chip.mom": "Mothers' houses",
   "chip.dad": "Fathers' houses",
   "chip.english": "English support",
-
   "family.title": "Your family",
   "family.parent": "Me (parent)",
   "family.addChild": "+ Add a child",
@@ -66,7 +63,6 @@
   "age.8-12": "8–12",
   "age.13-18": "13–18",
   "age.19-24": "19–24",
-
   "rooms.title": "Find a room",
   "rooms.count": "{n} rooms",
   "rooms.filter": "Filters",
@@ -84,7 +80,6 @@
   "rooms.searchSaved": "Vacancy alert is on",
   "rooms.mapHint": "The map shows neighborhoods only. You get the exact address after signing and paying",
   "rooms.dongAll": "All neighborhoods",
-
   "filter.title": "Filters",
   "filter.house": "House",
   "filter.any": "Any",
@@ -103,7 +98,6 @@
   "filter.reset": "Reset",
   "filter.apply": "Show rooms",
   "filter.noLimit": "No limit",
-
   "card.monthly": "{amount}/mo",
   "card.deposit": "Deposit {amount}",
   "card.bedrooms": "{n} bedroom(s)",
@@ -115,7 +109,6 @@
   "card.walk": "{min} min walk to {place}",
   "card.mom": "Mothers",
   "card.dad": "Fathers",
-
   "detail.cost": "Costs",
   "detail.deposit": "Deposit",
   "detail.rent": "Monthly rent",
@@ -153,7 +146,6 @@
   "poi.station": "Station",
   "poi.pediatric": "Pediatrics",
   "poi.mart": "Market",
-
   "auth.title": "Phone verification",
   "auth.sub": "Verify yourself to apply. No password needed",
   "auth.mock": "Test build: we check what you type instead of a real verification. Don't enter real personal data",
@@ -167,7 +159,6 @@
   "auth.alien": "Foreign resident (ARC)",
   "auth.submit": "Verify",
   "auth.logout": "Log out",
-
   "apply.title": "Quick application",
   "apply.step": "{n} / 3",
   "apply.moveIn": "Move-in date",
@@ -204,7 +195,6 @@
   "apply.doneSub": "We'll call you within 2 hours",
   "apply.doneNight": "Outside 9 am–9 pm, we'll call the next morning",
   "apply.goMy": "Track it in My Home",
-
   "my.title": "My Home",
   "my.login": "Verify your phone to continue your application",
   "my.applications": "Applications",
@@ -245,7 +235,6 @@
   "my.reportNotYet": "Not yet",
   "my.reply": "Reply from our team",
   "my.remove": "Delete",
-
   "report.button": "Feedback",
   "report.title": "Send feedback",
   "report.kind": "What is it about?",
@@ -262,11 +251,9 @@
   "report.send": "Send",
   "report.sent": "Thanks! We'll let you know when it's handled",
   "report.tooMany": "Please try again in a bit",
-
   "help.button": "Emergency help",
   "help.title": "Emergency help",
   "help.sub": "Tap to call",
-
   "guide.title": "How it works",
   "guide.steps": "Move-in steps",
   "guide.s1": "Find a room — where · from when · who",
@@ -275,7 +262,6 @@
   "guide.s4": "Sign and pay",
   "guide.s5": "Move in the same day",
   "guide.faq": "FAQ",
-
   "partner.title": "Rent us your home",
   "partner.sub": "Rent your home to single-parent families. Poom handles management and residents",
   "partner.kind": "You are",
@@ -288,7 +274,6 @@
   "partner.message": "Message",
   "partner.send": "Send",
   "partner.sent": "Received. Our CEO will contact you directly",
-
   "admin.title": "Operations console",
   "admin.key": "Admin key",
   "admin.keyHint": "Test key: poom-admin-dev",
@@ -314,7 +299,6 @@
   "admin.empty": "Nothing yet",
   "admin.refresh": "Refresh",
   "admin.demandHint": "Areas with no results and opening alerts — for choosing the next house",
-
   "common.loading": "Loading…",
   "common.slow": "The connection is slow",
   "common.retry": "Retry",
@@ -327,7 +311,6 @@
   "common.notFound": "Page not found",
   "common.goHome": "Go home",
   "common.needLogin": "Verification needed",
-
   "error.COMMON_400": "Please check what you entered",
   "error.COMMON_404": "Not found",
   "error.COMMON_409": "Already done",
@@ -346,5 +329,52 @@
   "error.REPORT_429": "Please try again in a bit",
   "error.REPORT_413": "The screenshot is too large",
   "error.REPORT_422": "Please fill in cause, fix and how verified",
-  "error.NETWORK": "Please check your internet connection"
+  "error.NETWORK": "Please check your internet connection",
+  "nav.community": "Community",
+  "community.title": "Questions & answers",
+  "community.sub": "Moving in, kids, support programs — answered by single parents who have been there and the Poom team",
+  "community.ask": "Ask",
+  "community.search": "Search questions",
+  "community.all": "All",
+  "community.topic.movein": "Moving in · documents",
+  "community.topic.life": "Daily life · house",
+  "community.topic.kids": "Kids · school",
+  "community.topic.support": "Support programs",
+  "community.topic.etc": "Other",
+  "community.role.mom": "Mom",
+  "community.role.dad": "Dad",
+  "community.role.team": "Poom team",
+  "community.answers": "{n} answers",
+  "community.official": "Team answer",
+  "community.solved": "Solved",
+  "community.helped": "Helpful",
+  "community.example": "Example",
+  "community.mine": "My post",
+  "community.empty": "No questions yet. Be the first to ask",
+  "community.noAnswer": "No answers yet. The Poom team will answer within a day",
+  "community.answerLabel": "Write an answer",
+  "community.answerPlaceholder": "Share what you know or have been through",
+  "community.answerSend": "Post answer",
+  "community.loginToWrite": "Anyone can read. To post, please verify yourself first",
+  "community.loginBtn": "Verify and post",
+  "community.privacy": "Don't write names, phone numbers, addresses or your child's name. Phone numbers and emails are hidden as *** automatically",
+  "community.anonNote": "Posts show only \"Mom · Dad + 4 letters\", never your real name",
+  "community.formTopic": "Topic",
+  "community.formTitle": "Title",
+  "community.formBody": "Details",
+  "community.formSend": "Post question",
+  "community.flag": "Report",
+  "community.flagged": "Reported. Our team will review it",
+  "community.hiddenNow": "Hidden after several reports. Our team will review it",
+  "community.markSolved": "This helped",
+  "community.back": "Back to list",
+  "error.COMMUNITY_429": "Please try again later (up to 5 questions and 20 answers per hour)",
+  "admin.tab.community": "Community",
+  "admin.flags": "{n} reports",
+  "admin.hiddenTag": "Hidden",
+  "admin.hide": "Hide",
+  "admin.unhide": "Show again",
+  "admin.officialAnswer": "Team answer",
+  "admin.officialSend": "Post official answer",
+  "admin.waiting": "Waiting for answer"
 }

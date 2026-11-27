@@ -524,7 +524,7 @@ a
     bottom: 0;
     z-index: 40;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));   /* 탭 수와 같게: 홈 · 방 찾기 · 커뮤니티 · 내 집 · 이용 안내 */
     height: var(--bottom-ui);
     padding: 0 var(--safe-r) var(--safe-b) var(--safe-l);
     background: var(--c-surface);
@@ -2206,4 +2206,121 @@ a
     padding: 0.6em 0.8em;
     border-radius: var(--radius);
     background: var(--c-bg);
+}
+
+/* ---------- 커뮤니티 묻고 답하기 ---------- */
+.chip--on
+{
+    border-color: var(--c-primary);
+    background: var(--c-primary-soft);
+    color: var(--c-primary-dark);
+}
+
+.back-link
+{
+    align-self: flex-start;
+    min-height: var(--tap);
+    display: inline-flex;
+    align-items: center;
+    font-weight: 600;
+}
+
+.qa-list,
+.qa-answers
+{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.qa-item
+{
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 16px;
+    color: inherit;
+    text-decoration: none;
+    min-width: 0;
+}
+
+.qa-item__tags
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.qa-item__title
+{
+    font-weight: 700;
+    font-size: 1.05rem;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+}
+
+.qa-item__meta
+{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin: 0;
+    font-size: 0.88rem;
+}
+
+.qa-question
+{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+}
+
+.qa-question__title
+{
+    margin: 0;
+    font-size: clamp(1.2rem, 4.5vw, 1.5rem);
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+}
+
+.qa-question__body,
+.qa-answer__body
+{
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.qa-answer
+{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 16px;
+}
+
+.qa-answer--official
+{
+    border-color: var(--c-primary);
+    background: var(--c-primary-soft);
+}
+
+.qa-answer--solved
+{
+    border-color: var(--c-ok);
+}
+
+.alias
+{
+    font-weight: 700;
+}
+
+.alias--team
+{
+    color: var(--c-primary-dark);
 }

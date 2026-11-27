@@ -190,3 +190,65 @@ export interface PartnerView
     readonly message: string;
     readonly createdAt: string;
 }
+
+// ---------- 커뮤니티 ----------
+export type CommunityTopic = 'movein' | 'life' | 'kids' | 'support' | 'etc';
+
+export interface CommunityAlias
+{
+    readonly role: 'mom' | 'dad' | 'team';
+    readonly tag: string;
+}
+
+export interface QuestionSummaryView
+{
+    readonly id: string;
+    readonly alias: CommunityAlias;
+    readonly topic: CommunityTopic;
+    readonly title: string;
+    readonly lang: 'ko' | 'en';
+    readonly answerCount: number;
+    readonly hasOfficial: boolean;
+    readonly solved: boolean;
+    readonly example: boolean;
+    readonly createdAt: string;
+}
+
+export interface AnswerDetail
+{
+    readonly id: string;
+    readonly alias: CommunityAlias;
+    readonly body: string;
+    readonly official: boolean;
+    readonly mine: boolean;
+    readonly createdAt: string;
+}
+
+export interface QuestionDetail
+{
+    readonly id: string;
+    readonly alias: CommunityAlias;
+    readonly topic: CommunityTopic;
+    readonly title: string;
+    readonly body: string;
+    readonly lang: 'ko' | 'en';
+    readonly example: boolean;
+    readonly mine: boolean;
+    readonly solvedAnswerId?: string;
+    readonly answers: readonly AnswerDetail[];
+    readonly createdAt: string;
+}
+
+// 운영 콘솔용 (숨김 · 신고 수 포함)
+export interface AdminAnswer extends Omit<AnswerDetail, 'mine'>
+{
+    readonly hidden: boolean;
+    readonly flaggedBy: readonly string[];
+}
+
+export interface AdminQuestion extends Omit<QuestionDetail, 'mine' | 'answers'>
+{
+    readonly hidden: boolean;
+    readonly flaggedBy: readonly string[];
+    readonly answers: readonly AdminAnswer[];
+}

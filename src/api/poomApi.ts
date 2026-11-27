@@ -1,6 +1,6 @@
 // API 모음 (Repository 역할): 화면은 이 함수들만 부르고 경로 · 모양은 몰라도 된다
 import { requestAsync, type ApiResult } from './http';
-import type { ApplicationView, ChildDraft, ContractView, DemandView, DocType, MapCluster, MetaView, MoveInView, PartnerView, ReportView, RoomView, Suggestion, TrailEntry, UserView } from './types';
+import type { AdminQuestion, CommunityTopic, QuestionDetail, QuestionSummaryView, ApplicationView, ChildDraft, ContractView, DemandView, DocType, MapCluster, MetaView, MoveInView, PartnerView, ReportView, RoomView, Suggestion, TrailEntry, UserView } from './types';
 
 export function childrenToQuery(children: readonly ChildDraft[]): string
 {
@@ -82,7 +82,26 @@ export const poomApi = {
     confirmReport: (id: string, resolved: boolean): Promise<ApiResult<{ ok: boolean }>> =>
         requestAsync(`/api/me/reports/${id}/confirm`, { method: 'POST', body: { resolved } }),
 
+    community: {
+        list: (topic: CommunityTopic | '', q: string): Promise<ApiResult<QuestionSummaryView[]>> =>
+            requestAsync('/api/community?' + new URLSearchParams({ ...(topic ? { topic } : {}), ...(q ? { q } : {}) }).toString()),
+        get: (id: string): Promise<ApiResult<QuestionDetail>> => requestAsync('/api/community/' + encodeURIComponent(id)),
+        ask: (body: { topic: CommunityTopic; title: string; body: string; lang: string }): Promise<ApiResult<{ id: string }>> =>
+            requestAsync('/api/community', { method: 'POST', body }),
+        answer: (id: string, body: string): Promise<ApiResult<{ id: string }>> =>
+            requestAsync(`/api/community/${encodeURIComponent(id)}/answers`, { method: 'POST', body: { body } }),
+        solve: (id: string, answerId: string): Promise<ApiResult<{ ok: boolean }>> =>
+            requestAsync(`/api/community/${encodeURIComponent(id)}/solve`, { method: 'POST', body: { answerId } }),
+        flag: (id: string, answerId?: string): Promise<ApiResult<{ hidden: boolean }>> =>
+            requestAsync(`/api/community/${encodeURIComponent(id)}/flag`, { method: 'POST', body: { answerId: answerId ?? '' } }),
+    },
+
     admin: {
+        community: (): Promise<ApiResult<AdminQuestion[]>> => requestAsync('/api/admin/community', { admin: true }),
+        officialAnswer: (id: string, body: string): Promise<ApiResult<{ id: string }>> =>
+            requestAsync(`/api/admin/community/${id}/answers`, { method: 'POST', body: { body }, admin: true }),
+        setHidden: (id: string, hidden: boolean, answerId?: string): Promise<ApiResult<{ ok: boolean }>> =>
+            requestAsync(`/api/admin/community/${id}/hidden`, { method: 'POST', body: { hidden, answerId: answerId ?? '' }, admin: true }),
         applications: (): Promise<ApiResult<ApplicationView[]>> => requestAsync('/api/admin/applications', { admin: true }),
         decide: (id: string, decision: string): Promise<ApiResult<ApplicationView>> =>
             requestAsync(`/api/admin/applications/${id}/decision`, { method: 'POST', body: { decision }, admin: true }),
