@@ -3,7 +3,7 @@ import { AppError } from '../core/appError';
 import type { Container } from '../container';
 import type { Lang } from '../models/housing';
 import type { ReportKind, ReportStatus, TrailEntry } from '../models/feedback';
-import type { DocType, Gender, IdType, PayMethod, User } from '../models/people';
+import type { DocType, Gender, IdType, PayMethod, Urgency, User } from '../models/people';
 import { TOPICS, type Topic } from '../models/community';
 import faqJson from '../../data/faq.json';
 import helpJson from '../../data/help_contacts.json';
@@ -116,7 +116,8 @@ export function buildRouter(c: Container, adminKey: string | undefined): Router
             children: parseChildren(str(b.children)),
             contactTime: str(b.contactTime),
             consultLang: lang(b.consultLang),
-            memo: str(b.memo),
+            situation: str(b.situation),
+            urgency: typeof b.urgency === 'string' ? (b.urgency as Urgency) : undefined,
             docType,
         }), undefined, 201);
     }));

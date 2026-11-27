@@ -2,13 +2,13 @@
 import { AppError } from '../core/appError';
 import { failure, success, type Result } from '../core/result';
 import type { Lang } from '../models/housing';
-import { AGE_BANDS, type Application, type Child, type DocType, type User } from '../models/people';
+import { AGE_BANDS, URGENCIES, type Application, type Child, type DocType, type Urgency, type User } from '../models/people';
 import type { IHousingRepository } from '../repositories/housingRepository';
 import type { IRecordRepository } from '../repositories/recordRepository';
 import { checkFit, householdArea } from '../rules/housingStandard';
 import type { IClock, IIdGenerator, INotifier } from '../adapters/adapters';
 
-const MAX_MEMO = 200;
+const MAX_SITUATION = 1000;
 const DOC_TYPES: readonly DocType[] = ['resident_reg', 'single_parent', 'alien_reg'];
 const ACTIVE: readonly Application['status'][] = ['received', 'approved', 'on_hold'];
 
@@ -20,7 +20,8 @@ export interface ApplyInput
     readonly children: readonly Child[];
     readonly contactTime: string;
     readonly consultLang: Lang;
-    readonly memo: string;
+    readonly situation: string;
+    readonly urgency: Urgency | undefined;
     readonly docType: DocType | undefined;      // 신청 때 바로 올리면 (POL_HOUSE_02)
 }
 
@@ -111,7 +112,8 @@ export class ApplicationService
             children: input.children,
             contactTime: input.contactTime.slice(0, 40),
             consultLang: input.consultLang,
-            memo: input.memo.slice(0, MAX_MEMO),
+            situation: input.situation.trim().slice(0, MAX_SITUATION),
+            urgency: input.urgency && URGENCIES.includes(input.urgency) ? input.urgency : undefined,
             status: 'received',
             document: input.docType ? { docType: input.docType, uploadedAt: now, checked: false } : undefined,
             createdAt: now,
@@ -119,7 +121,8 @@ export class ApplicationService
         const saved = await this._apps.saveAsync(app);
         if (saved.ok)
         {
-            await this._notifier.sendAsync({ to: 'operator', urgent: false, text: `새 신청 ${app.id} · ${house.data.nameKo} · 2시간 안에 전화 (${input.consultLang === 'en' ? '영어 상담' : '한국어'})` });
+            // 오늘 · 내일 당장 집이 필요하면 긴급 알림 (상담 순서도 앞으로)
+            await this._notifier.sendAsync({ to: 'operator', urgent: app.urgency === 'now', text: `${app.urgency === 'now' ? '🚨 당장 필요 · ' : ''}새 신청 ${app.id} · ${house.data.nameKo} · 2시간 안에 전화 (${input.consultLang === 'en' ? '영어 상담' : '한국어'})` });
         }
         return saved;
     }

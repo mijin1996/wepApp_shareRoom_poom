@@ -25,6 +25,9 @@ export interface User
     readonly verified: boolean;       // 외국인 휴대폰 미인증이면 false (POL_MEMBER_04)
 }
 
+export type Urgency = 'now' | 'week' | 'month';
+export const URGENCIES: readonly Urgency[] = ['now', 'week', 'month'];
+
 export type ApplicationStatus = 'received' | 'approved' | 'on_hold' | 'rejected';
 export type DocType = 'resident_reg' | 'single_parent' | 'alien_reg';
 
@@ -45,7 +48,8 @@ export interface Application
     readonly children: readonly Child[];
     readonly contactTime: string;
     readonly consultLang: Lang;
-    readonly memo: string;
+    readonly situation: string;            // 내 상황 (운영 매니저만 봄, POL_APPLY_SITUATION)
+    readonly urgency: Urgency | undefined; // 언제까지 집이 필요한지
     readonly status: ApplicationStatus;
     readonly document: DocumentInfo | undefined;
     readonly createdAt: string;

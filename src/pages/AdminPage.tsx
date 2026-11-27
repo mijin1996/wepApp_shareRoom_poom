@@ -170,7 +170,9 @@ export function AdminPage()
                     {apps.map((a) => (
                         <article key={a.id} className="card admin-app">
                             <p><strong>{a.id}</strong> · {a.roomId} · <span className="tag">{a.status}</span> · {a.consultLang === 'en' ? '🇬🇧 EN' : '한국어'} · {a.contactTime}</p>
-                            <p className="muted">{a.moveInDate} · {a.months}m · {a.children.map((c) => c.ageBand + c.gender).join(', ')} {a.memo && '· ' + a.memo}</p>
+                            <p className="muted">{a.moveInDate} · {a.months}m · {a.children.map((c) => c.ageBand + c.gender).join(', ')}</p>
+                            {a.urgency && <p><span className={'tag' + (a.urgency === 'now' ? ' tag--danger' : '')}>{t(('apply.urgency.' + a.urgency) as TextKey)}</span></p>}
+                            {a.situation && <p className="admin-situation">{a.situation}</p>}
                             <p>{a.document ? `📄 ${a.document.docType} ${a.document.checked ? '✓' : '⏳'}` : t('admin.noDoc')}</p>
                             <div className="btn-row btn-row--start">
                                 {a.document && !a.document.checked && <button type="button" className="btn btn--outline btn--small" onClick={() => void poomApi.admin.checkDoc(a.id).then(load)}>{t('admin.docCheck')}</button>}

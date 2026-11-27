@@ -104,7 +104,8 @@ export interface ApplicationView
     readonly document?: { readonly docType: DocType; readonly checked: boolean };
     readonly createdAt: string;
     readonly consultLang: 'ko' | 'en';
-    readonly memo: string;
+    readonly situation: string;
+    readonly urgency?: 'now' | 'week' | 'month';
     readonly contactTime: string;
 }
 

@@ -51,7 +51,8 @@ export function ApplyPage()
     const [family, setFamily] = useState(children);
     const [contact, setContact] = useState('afternoon');
     const [consultLang, setConsultLang] = useState<'ko' | 'en'>(lang);
-    const [memo, setMemo] = useState('');
+    const [situation, setSituation] = useState('');
+    const [urgency, setUrgency] = useState<'now' | 'week' | 'month' | undefined>();
     const [docType, setDocType] = useState<DocType | undefined>();
     const [later, setLater] = useState(false);
     const [error, setError] = useState<string | undefined>();
@@ -94,7 +95,8 @@ export function ApplyPage()
             children: family.map((c) => c.ageBand + c.gender).join(','),
             contactTime: contact,
             consultLang,
-            memo,
+            situation,
+            urgency,
             docType: later ? undefined : docType,
         });
         setBusy(false);
@@ -160,9 +162,19 @@ export function ApplyPage()
                             <button type="button" className={consultLang === 'en' ? 'seg__on' : ''} aria-pressed={consultLang === 'en'} onClick={() => setConsultLang('en')}>English</button>
                         </div>
                     </fieldset>
+                    <fieldset className="field">
+                        <legend className="field__label">{t('apply.urgency')}</legend>
+                        <div className="seg seg--wrap">
+                            {(['now', 'week', 'month'] as const).map((u) => (
+                                <button type="button" key={u} className={urgency === u ? 'seg__on' : ''} aria-pressed={urgency === u} onClick={() => setUrgency(urgency === u ? undefined : u)}>{t(('apply.urgency.' + u) as TextKey)}</button>
+                            ))}
+                        </div>
+                    </fieldset>
                     <label className="field">
-                        <span className="field__label">{t('apply.memo')}</span>
-                        <textarea className="input" rows={2} maxLength={200} value={memo} onChange={(e) => setMemo(e.target.value)} />
+                        <span className="field__label">{t('apply.situation')}</span>
+                        <span className="muted" id="situation-help">{t('apply.situationHelp')}</span>
+                        <textarea className="input" rows={6} maxLength={1000} value={situation} onChange={(e) => setSituation(e.target.value)} placeholder={t('apply.situationPlaceholder')} aria-describedby="situation-help situation-count" />
+                        <span className="muted field__count" id="situation-count">🔒 {t('apply.situationPrivate')} · {situation.length} / 1000</span>
                     </label>
                     {!later && <DocPicker value={docType} onChange={setDocType} idType={user?.idType ?? 'kr'} />}
                     <label className="toggle">

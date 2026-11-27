@@ -11,7 +11,8 @@ const baseInput = {
     children: [{ ageBand: '6-7' as const, gender: 'f' as const }],
     contactTime: '오후',
     consultLang: 'ko' as const,
-    memo: '',
+    situation: '',
+    urgency: undefined,
     docType: undefined,
 };
 
@@ -211,5 +212,34 @@ describe('본인인증', () =>
         const result = await c.auth.verifyAsync({ name: '김한별', phone: '12', gender: 'f', idType: 'kr', lang: 'ko' });
 
         expect(result).toEqual({ ok: false, error: AppError.InvalidInput });
+    });
+});
+
+describe('내 상황 · 급한 정도', () =>
+{
+    it('내 상황은 1000자까지 저장되고, 오늘 · 내일 당장이면 운영 매니저에게 긴급 알림', async () =>
+    {
+        // Given
+        const { c, notifier } = makeContainer();
+        const user = await signUpAsync(c);
+        const long = '가'.repeat(1200);
+
+        // When
+        const app = unwrap(await c.applications.applyAsync(user, { ...baseInput, situation: '  ' + long, urgency: 'now' }));
+
+        // Then
+        expect(app.situation).toHaveLength(1000);
+        expect(app.urgency).toBe('now');
+        expect(notifier.sent.some((m) => m.urgent && m.text.includes('당장 필요'))).toBe(true);
+    });
+
+    it('정해진 값이 아닌 급한 정도는 버린다', async () =>
+    {
+        const { c } = makeContainer();
+        const user = await signUpAsync(c);
+
+        const app = unwrap(await c.applications.applyAsync(user, { ...baseInput, urgency: 'yesterday' as never }));
+
+        expect(app.urgency).toBeUndefined();
     });
 });

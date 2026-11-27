@@ -2185,3 +2185,25 @@ a
         transition: none !important;
     }
 }
+
+/* ---------- 신청: 내 상황 · 운영 콘솔 표시 ---------- */
+.field__count
+{
+    font-size: 0.85rem;
+    overflow-wrap: anywhere;
+}
+
+.tag--danger
+{
+    background: var(--c-danger);
+    color: #fff;
+}
+
+.admin-situation
+{
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    padding: 0.6em 0.8em;
+    border-radius: var(--radius);
+    background: var(--c-bg);
+}
