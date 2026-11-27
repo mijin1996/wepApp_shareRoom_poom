@@ -1,3 +1,5 @@
+> ⚠ 2026-11-27 광고 플랫폼 전환으로 계약 · 결제 · 입주 안내는 품이 하지 않음 — [ad-platform](../ad-platform/spec.md)이 대신함. 아래는 기록용.
+
 # application-contract Specification
 
 ## Purpose

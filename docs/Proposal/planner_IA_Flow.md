@@ -12,6 +12,7 @@
 
 | 버전 | 날짜 | 변경 내용 | 사유 | 결정자 | 영향 범위 |
 |---|---|---|---|---|---|
+| v0.9 | 2026-11-27 | 광고 플랫폼 — 문의하기 · 내 문의 · 서류함 · 광고 올리기 · 혜택 · 문의 메뉴, 계약 · 결제 · 입주 안내 화면 삭제, 핵심 플로우 | `REQ_049` ~ `058` · `POL_AD` | PM | 메뉴 · 플로우 |
 | v0.8 | 2026-11-27 | 공지사항 화면, 메뉴 순서(커뮤니티 맨 끝), 아래 탭 = 홈 · 방 찾기 · 내 집 · 공지 · 커뮤니티 | `REQ_046` ~ `048` · `POL_MENU_01` | PM | 메뉴 · 탭바 · 홈 |
 | v0.7 | 2026-11-27 | 커뮤니티 메뉴 · 묻고 답하기 화면, 아래 탭 5개 | `REQ_041` ~ `044` | PM | 메뉴 · 탭바 |
 | v0.6 | 2026-11-27 | 검색 · 지도 · 관심 방 · 안내 · 제휴 화면 | 원하는 지역 · 학교 · 직장 근처로 방을 찾게 함 | PM | 홈 · 방 찾기 · 내 집 · 소식 |
@@ -34,14 +35,16 @@
 | 방 찾기 | 목록 (필터) | `SCR_ROOM_LIST_01` | `/rooms?q=…` |
 |  | 지도 (목록과 나란히 / 휴대폰은 전환) | `SCR_MAP_01` | `/rooms?view=map` |
 |  | 방 상세 | `SCR_ROOM_DETAIL_01` | `/rooms/:id` |
-|  | 신청 1 · 2 · 3단계 | `SCR_APPLY_01` ~ `03` | `/apply/:roomId/1~3` |
-|  | 신청 완료 | `SCR_APPLY_DONE_01` | `/apply/done` |
-| 내 집 (EN: My Home) | 신청 상태 · 방 보기 예약 | `SCR_MY_01` · `SCR_TOUR_01` | `/my` · `/my/tour` |
-|  | 계약서 서명 | `SCR_CONTRACT_01` | `/my/contract` |
-|  | 결제 | `SCR_PAY_01` | `/my/pay` |
-|  | 입주 안내 | `SCR_MOVEIN_01` | `/my/movein` |
-|  | 하우스 (공지 · 수리 요청) | `SCR_HOUSE_01` | `/my/house` |
-|  | 돌봄 품앗이 | `SCR_CARE_01` | `/my/care` |
+|  | 문의하기 1 · 2 · 3단계 | `SCR_APPLY_01` ~ `03` | `/apply/:roomId` |
+|  | 문의 완료 | `SCR_APPLY_DONE_01` | `/apply/done` |
+| 내 집 (EN: My Home) | 내 문의 · 진행 표시 · 서류 보내기 | `SCR_MY_01` | `/my` |
+|  | 서류함 | `SCR_DOCBOX_01` | `/my#docbox` |
+| 혜택 | 제휴 할인 · 기업 후원 · 기관 지원 | `SCR_PERK_01` | `/perks` |
+| 광고 올리기 | 광고 상품 · 광고주 등록 | `SCR_AD_01` | `/advertise` |
+|  | 내 광고 · 새 광고 · 결제 | `SCR_AD_02` | `/advertise` (내 광고) |
+|  | 받은 문의 · 진행 옮기기 | `SCR_AD_03` | `/advertise` (받은 문의) |
+|  | 결제 · 정산 | `SCR_AD_04` | `/advertise` (결제 · 정산) |
+| 문의 | 광고 · 제휴 · 후원 · 기관 제안 | `SCR_CONTACT_01` | `/contact` |
 |  | 관심 방 · 빈방 알림 | `SCR_MY_SAVED_01` | `/my/saved` |
 | 소식 | 공공임대 · 한부모 공고 | `SCR_NOTICE_01` | `/notice` |
 | 공지 | 공지사항 목록 (📌 중요 맨 위) | `SCR_ANNOUNCE_01` | `/notices` |
@@ -50,7 +53,6 @@
 |  | 질문 · 답변 보기 · 답변 쓰기 | `SCR_COMMUNITY_02` | `/community/:id` |
 |  | 질문하기 | `SCR_COMMUNITY_03` | `/community/ask` |
 |  | 이용 방법 · 자주 묻는 질문 · 입주 후기 | `SCR_GUIDE_01` | `/guide` |
-|  | 집 빌려주실 분 (제휴 문의) | `SCR_PARTNER_01` | `/partner` |
 | (공통) | 본인인증 | `SCR_AUTH_01` | `/auth` |
 |  | 긴급 도움 (시트) | `SCR_HELP_01` | 모든 화면 하단 |
 |  | 언어 전환 (한국어 · English) | `SCR_LANG_01` | 모든 화면 오른쪽 위 · 영어는 `/en/…` |
@@ -62,26 +64,44 @@
 | 화면 | 비로그인 | 본인인증 | 승인된 신청자 | 입주자 | 운영 매니저 |
 |---|---|---|---|---|---|
 | 홈 · 방 찾기 · 소식 · 긴급 도움 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 신청 | → 본인인증 | ✅ | ✅ | — | — |
-| 계약 · 결제 | ❌ | ❌ | ✅ | ✅ | 조회 |
-| 입주 안내 (주소) · 하우스 · 돌봄 | ❌ | ❌ | ❌ | ✅ | ✅ |
+| 문의 · 서류함 · 혜택 신청 | → 본인인증 | ✅ | ✅ | ✅ | 조회 |
+| 광고 올리기 | → 본인인증 | 광고주 등록 · 확인 후 | — | — | 확인 · 반려 · 내림 |
+| 혜택 보기 · 문의(제안) 메뉴 | ✅ | ✅ | ✅ | ✅ | ✅ |
 
-## 4. 핵심 플로우 — 방 보기부터 입주까지
+## 4. 핵심 플로우 — 방 찾기부터 계약까지 (품은 전달 · 기록만)
 ```mermaid
 flowchart TB
-  A["방 찾기<br/>바로 입주 필터"]:::start --> B["방 상세"]:::proc
+  A["방 찾기<br/>⭐ 추천 광고 먼저"]:::start --> B["방 상세<br/>광고한 분 · 품은 광고만 고지"]:::proc
   B --> C{"로그인?"}:::judge
   C -- N --> D["휴대폰 본인인증<br/>SCR_AUTH_01"]:::proc --> E
-  C -- Y --> E["신청 3단계<br/>+ 서류 1장 사진"]:::proc
-  E --> F["상담 통화<br/>2시간 안 · 한국어/영어<br/>서류 확인"]:::proc
-  F --> G{"승인?<br/>서류 확인됨?"}:::judge
-  G -- 보류 · 거절 --> H["사유 안내<br/>+ 도움 기관 연결"]:::out
-  G -- Y --> I{"방 보기?"}:::judge
-  I -- 원함 --> I2["방문 · 영상 통화"]:::proc --> J
-  I -- 바로 계약 --> J["전자계약 서명"]:::val
-  J --> K["보증금 + 첫 달 결제"]:::val
-  K --> L["입주 안내 열림<br/>주소 · 출입 방법"]:::out
-  L --> M["당일 입주"]:::endn
+  C -- Y --> E["문의하기 3단계<br/>내 상황 · 동의"]:::proc
+  E --> F["광고주에게 알림<br/>(공인중개사 광고는 문의 1건 과금)"]:::val
+  F --> G["광고주가 연락<br/>진행: 연락 옴"]:::proc
+  G --> H["집 보기<br/>진행: 집 보기"]:::proc
+  H --> I{"서류함 서류를<br/>이 광고주에게 보냄?"}:::judge
+  I -- 아니요 --> J["계약함으로 못 옮김<br/>DOC_428"]:::out
+  I -- 예 --> K["광고주와 직접 계약<br/>진행: 계약함"]:::val
+  K --> L["입주 (광고주와 직접)"]:::endn
+  classDef start fill:#2F8F6B,color:#fff,stroke:#2F8F6B
+  classDef proc fill:#3AA6C8,color:#fff,stroke:#3AA6C8
+  classDef val fill:#A33A33,color:#fff,stroke:#A33A33
+  classDef judge fill:#E08A2E,color:#fff,stroke:#E08A2E
+  classDef out fill:#7A5AA6,color:#fff,stroke:#7A5AA6
+  classDef endn fill:#6B7280,color:#fff,stroke:#6B7280
+```
+
+### 4-1. 광고주 플로우
+```mermaid
+flowchart LR
+  R["광고주 등록<br/>등록번호 / 소유 서류"]:::start --> V{"운영 매니저 확인"}:::judge
+  V -- 거절 --> X["문의 메뉴로 연락"]:::out
+  V -- 확인 --> S["새 광고 → 확인 요청"]:::proc --> Q{"광고 확인"}:::judge
+  Q -- 반려(이유) --> S
+  Q -- 확인 --> P{"공인중개사 구독 중?"}:::judge
+  P -- 예 --> LIVE["게시 중"]:::val
+  P -- 아니요 --> PAY["집주인 30일 결제 /<br/>공인중개사 구독"]:::val --> LIVE
+  LIVE --> TOP["상단 노출 7일 (선택)"]:::proc
+  LIVE --> END["기간 끝 · 직접 내림 · 허위 매물 내림"]:::endn
   classDef start fill:#2F8F6B,color:#fff,stroke:#2F8F6B
   classDef proc fill:#3AA6C8,color:#fff,stroke:#3AA6C8
   classDef val fill:#A33A33,color:#fff,stroke:#A33A33

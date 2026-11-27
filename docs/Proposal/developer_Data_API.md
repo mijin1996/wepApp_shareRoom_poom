@@ -15,6 +15,7 @@
 | v0.7 | 2026-11-27 | 검색 · 지도 · 관심 방 · 빈방 알림 · 지역 수요 · 주변 시설 · 후기 · 제휴 문의, `HOUSE` 속성 · 방 목록 필터 | 원하는 지역 · 학교 · 직장 근처로 방을 찾게 함 | 백엔드 개발자 | DB · API · 데이터 파일 |
 | v0.6 | 2026-11-26 | `REPORT` · 상태 기록 · 답장, `API_REPORT_01` ~ `03`, `REPORT_413` · `429` | 민원 · 오류를 끝까지 처리하고 개선 방향을 정하기 위함 | 백엔드 개발자 | DB · API · R2 |
 | v0.5 | 2026-11-26 | `ROOM` 침실 수 · 면적 · 상품, 방 목록 가족 조건, `ROOM_422`, 나이대 6 · 8세 경계 | `POL_ROOM` | 백엔드 개발자 | DB · 방 API · 신청 API |
+| v0.8 | 2026-11-27 | 광고 플랫폼: `ADVERTISER` · `LISTING` · `CHARGE` · `INQUIRY` · `DOCUMENT_BOX` · `PERK` · `PERK_REQUEST` · `PROPOSAL`, `API_AD_*` · `API_INQUIRY_*` · `API_PERK_*` · `API_PROPOSAL_*`, 에러 코드, 계약 · 결제 API 삭제 | `REQ_049` ~ `058` | 백엔드 개발자 | DB · API · 데이터 파일 |
 | v0.7 | 2026-11-27 | `NOTICE`, `API_NOTICE_02` · `03` | `REQ_046` ~ `048` | 백엔드 개발자 | DB · API |
 | v0.6 | 2026-11-27 | `QUESTION` · `ANSWER`, `API_COMMUNITY_01` ~ `04`, `COMMUNITY_429`, 신청 `situation` · `urgency` | `REQ_041` ~ `045` | 백엔드 개발자 | DB · API |
 | v0.5 | 2026-11-27 | 본인인증에서 태어난 해 · 부모 나이 조건 뺌, 신청은 만 24세 이하 자녀 1명 이상 (`COMMON_400`) | `POL_MEMBER_01` · `POL_HOUSE_01` | 백엔드 개발자 | DB · 본인인증 · 신청 API |
@@ -96,6 +97,18 @@ erDiagram
 | `API_DEMAND_01` | 지역 알림 (0건 검색) | `POST /api/demand` | gu, dong, household_size, price_band | ok |
 | `API_GUIDE_01` | 후기 · 자주 묻는 질문 | `GET /api/reviews` · `/api/faq` | house_id, lang | items[] |
 | `API_PARTNER_01` | 집 빌려주기 문의 | `POST /api/partner` | kind, gu, building_type, rooms, contact, message | id |
+| `API_AD_01` | 광고 상품 · 지역 | `GET /api/ad-products` · `/api/areas` | — | products[] · 구 · 동[] |
+| `API_AD_02` | 광고주 등록 · 내 정보 | `POST /api/advertiser` · `GET /api/advertiser/me` | kind, nameKo, nameEn, agentRegNo, ownershipDoc | advertiser |
+| `API_AD_03` | 내 광고 · 새 광고 · 내리기 | `GET` · `POST /api/advertiser/listings` · `POST /api/advertiser/listings/:id/end` | draft (`POL_AD_04`) | listing |
+| `API_AD_04` | 광고 상품 결제 | `POST /api/advertiser/buy` | productId, listingId, method | charge |
+| `API_AD_05` | 결제 기록 · 정산 | `GET /api/advertiser/statement` · `POST /api/advertiser/settle` | method | charges[] · unpaidTotal / total |
+| `API_AD_06` | 받은 문의 · 진행 옮기기 | `GET /api/advertiser/inquiries` · `POST /api/advertiser/inquiries/:id/status` | status | rows[] (이름 · 전화 · 보낸 서류만) |
+| `API_INQUIRY_01` | 문의 보내기 · 내 문의 | `POST /api/inquiries` · `GET /api/me/inquiries` | roomId, moveInDate, months, children, contactTime, consultLang, situation, urgency, **agree** | inquiry |
+| `API_INQUIRY_02` | 서류 보내기 · 계약했어요 · 그만둘래요 | `POST /api/inquiries/:id/share-document` · `/status` | status (contracted / closed) | inquiry |
+| `API_DOCBOX_01` | 서류함 | `GET` · `POST /api/me/document` | docType | document |
+| `API_PERK_01` | 혜택 목록 · 이동 · 신청 | `GET /api/perks` · `POST /api/perks/:id/open` · `/request` · `GET /api/me/perk-requests` | kind / note | perks[] · url · 신청한 혜택[] |
+| `API_PROPOSAL_01` | 문의 메뉴 (제안) | `POST /api/proposals` | kind, org, name, contact, message | id |
+| `API_ADMIN_AD` | 운영 콘솔 | `/api/admin/advertisers` · `listings` · `documents` · `inquiries` · `stats` · `revenue` · `perks` · `perk-requests` · `proposals` | 확인 · 반려(reason) · 강제로 내림 · 서류 확인 · 혜택 쓰기 · 제안 상태 | — |
 | `API_NOTICE_02` | 공지사항 목록 · 보기 | `GET /api/notices` · `/api/notices/:id` | — | items[] (게시 중만, 📌 먼저 · 최신 순) |
 | `API_NOTICE_03` | 운영 콘솔 공지 | `GET` · `POST /api/admin/notices` · `PUT /api/admin/notices/:id` | category, title_ko, body_ko, title_en, body_en, pinned, published | notice |
 | `API_COMMUNITY_01` | 질문 목록 · 보기 | `GET /api/community` · `/api/community/:id` | topic, q | items[] (실명 · 사용자 ID 없음, alias 만) |
@@ -111,12 +124,14 @@ erDiagram
 |---|---|---|
 | `AUTH_401` | 로그인 만료 | 문자 코드 재로그인 → 원래 화면 |
 | `AUTH_403` | 본인인증 실패 · 권한 없음 (부모 나이는 받지도 보지도 않음) | "본인인증을 다시 해 주세요" |
-| `APPLY_409` | 진행 중 신청 있음 | `SCR_APPLY_03 [3]` |
+| `APPLY_409` | 이 방에 이미 문의함 | 내 집 진행 표시로 |
 | `ROOM_422` | 가족 수에 비해 작은 방 (`POL_ROOM_04`) | "가족 수에 비해 작은 방이에요" + 맞는 방 추천 |
-| `ROOM_410` | 방이 이미 계약됨 | 근처 빈방 추천 ([IA·플로우](planner_IA_Flow.md) §5) |
-| `CONTRACT_403` | 승인되지 않은 신청 | 내 집로 이동 |
-| `DOC_428` | 확인 서류 미제출 · 확인 전 | `SCR_CONTRACT_01 [2]` 서명 잠금 + [서류 올리기] |
-| `PAY_402` | 결제 실패 | `SCR_PAY_01 [3]` |
+| `ROOM_410` | 나간 방 · 광고 기간 끝 | 근처 빈방 추천 ([IA·플로우](planner_IA_Flow.md) §5) |
+| `DOC_428` | 서류함이 비었거나 서류를 보내지 않음 (`POL_HOUSE_02`) | 서류함 · [서류 보내기] 안내 |
+| `INQUIRY_429` | 진행 중인 문의 5곳 넘음 | "끝난 문의를 닫고 다시" |
+| `AD_403` | 광고주 확인 전 | 광고 올리기 화면 확인 기다림 |
+| `AD_402` | 공인중개사 구독 필요 | [월 구독 시작] |
+| `PAY_402` | 광고 상품 결제 실패 | 다른 수단 · 기간 그대로 |
 | `REPORT_413` | 사진이 너무 큼 | 사진을 줄여 다시 보냄 (자동) |
 | `REPORT_429` | 신고가 너무 잦음 (`POL_REPORT_10`) | `SCR_REPORT_01` "잠시 뒤 다시 보내 주세요" |
 | `COMMON_500` | 서버 오류 | 재시도 버튼 |
@@ -131,3 +146,16 @@ erDiagram
 | `data/places.json` | 검색 추천용 지역(구 · 동) · 역 · 학교 · 어린이집 이름 (한글 · 영문) | `schema/places.schema.json` |
 | `data/faq.json` | 자주 묻는 질문 `{ "ko": …, "en": … }` | `schema/faq.schema.json` |
 | `data/notices.json` | 공공 공고 (수집 결과) | `schema/notices.schema.json` |
+
+## 6. 광고 플랫폼 데이터
+| 엔터티 | 주요 필드 | 비고 |
+|---|---|---|
+| `ADVERTISER` | id, user_id, kind(agent · owner), name_ko, name_en, agent_reg_no, ownership_doc, status(pending · verified · rejected), subscription_until | 사람당 1개 |
+| `LISTING` | id, advertiser_id, draft(`POL_AD_04`), status(review · approved · live · rejected · ended), house_id, room_id, live_until, top_until, reject_reason | 게시되면 `HOUSE` · `ROOM`에 `listing`(광고한 분 · 기간 · 설명)과 함께 올라감 |
+| `CHARGE` | id, advertiser_id, product_id, amount, listing_id, inquiry_id, paid | 문의 과금은 paid=false → 정산 |
+| `INQUIRY` | id, user_id, room_id, house_id, advertiser_id, move_in_date, months, children, contact_time, consult_lang, situation, urgency, status, doc_shared, history[] | 계약 · 결제 테이블 없음 |
+| `DOCUMENT_BOX` | id(=user_id), doc_type, uploaded_at, checked | 원본은 R2, 보관 기간 [F-22](common_needFix.md#2-정할-것) |
+| `PERK` · `PERK_REQUEST` | kind(partner · sponsor · institution), action(link · request), url, provider, title · desc(ko · en), active, clicks / perk_id, user_id, note | 예시: `data/perks.json` |
+| `PROPOSAL` | kind(ad · partner · sponsor · institution · etc), org, name, contact, message, status(new · in_progress · done) | 로그인 없이 |
+
+데이터 파일: `data/ad_products.json`(`schema/ad_products.schema.json`), `data/perks.json`(`schema/perks.schema.json`), `data/houses.json`에 `listing` 추가(`schema/houses.schema.json`).
