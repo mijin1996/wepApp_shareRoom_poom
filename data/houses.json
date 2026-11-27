@@ -2,8 +2,8 @@
   "houses": [
     {
       "id": "h-mangwon",
-      "name_ko": "품 망원",
-      "name_en": "Poom Mangwon",
+      "name_ko": "망원",
+      "name_en": "Mangwon",
       "type": "mom",
       "gu": "마포구",
       "gu_en": "Mapo-gu",
@@ -44,8 +44,8 @@
     },
     {
       "id": "h-bulgwang",
-      "name_ko": "품 불광",
-      "name_en": "Poom Bulgwang",
+      "name_ko": "불광",
+      "name_en": "Bulgwang",
       "type": "mom",
       "gu": "은평구",
       "gu_en": "Eunpyeong-gu",
@@ -84,8 +84,8 @@
     },
     {
       "id": "h-sillim",
-      "name_ko": "품 신림",
-      "name_en": "Poom Sillim",
+      "name_ko": "신림",
+      "name_en": "Sillim",
       "type": "dad",
       "gu": "관악구",
       "gu_en": "Gwanak-gu",
