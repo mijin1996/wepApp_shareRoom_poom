@@ -72,13 +72,11 @@ export function Layout()
                     <NavLink to={path('/partner')} className="topnav__link">{t('nav.partner')}</NavLink>
                 </nav>
                 <div className="topbar__actions">
-                    <button type="button" className="top-action top-action--help" onClick={() => setHelpOpen(true)} aria-label={t('help.button')}>
+                    <button type="button" className="top-action top-action--icon top-action--help" onClick={() => setHelpOpen(true)} aria-label={t('help.button')} title={t('help.button')}>
                         <span aria-hidden="true">🆘</span>
-                        <span className="top-action__label">{t('help.button')}</span>
                     </button>
-                    <button type="button" className="top-action" onClick={() => void openReport()} aria-label={t('report.button')}>
+                    <button type="button" className="top-action top-action--icon" onClick={() => void openReport()} aria-label={t('report.button')} title={t('report.button')}>
                         <span aria-hidden="true">💬</span>
-                        <span className="top-action__label">{t('report.button')}</span>
                     </button>
                     <button type="button" className="top-action lang-btn" onClick={switchLang} lang={lang === 'en' ? 'ko' : 'en'}>
                         {t('nav.lang')}
