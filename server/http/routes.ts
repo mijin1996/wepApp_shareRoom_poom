@@ -134,6 +134,7 @@ export function buildRouter(c: Container, adminKey: string | undefined): Router
 
     // ---------- 공개 ----------
     r.add('GET', '/api/meta', async () => okResponse({ faq: faqJson.items, help: helpJson.contacts, reportKinds: kindsJson.kinds }));
+    r.add('GET', '/api/areas', async () => fromResult(await c.search.areasAsync()));
     r.add('GET', '/api/search/suggest', async (ctx) => fromResult(await c.search.suggestAsync(ctx.query.get('q') ?? '')));
     r.add('POST', '/api/demand', async (ctx) =>
     {

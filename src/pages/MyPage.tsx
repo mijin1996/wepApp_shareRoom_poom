@@ -1,44 +1,43 @@
-// 내 집 (SCR_MY_01): 신청 진행 · 서류 · 계약 서명 · 결제 · 입주 안내 · 관심 방 · 빈방 알림 · 내 신고
+// 내 집 (SCR_MY_01): 내 문의 진행 · 서류함 · 관심 방 · 빈방 알림 · 내 신고
+// 품은 문의를 전달하고 진행만 보여 줌 — 계약 · 방값은 광고한 분과 직접 (POL_INQUIRY)
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { poomApi } from '../api/poomApi';
-import type { ApplicationView, ContractView, DocType, MoveInView, ReportView, RoomView } from '../api/types';
+import { INQUIRY_STEPS, type DocType, type DocumentView, type InquiryStatus, type InquiryView, type ReportView, type RoomView } from '../api/types';
 import { RoomCard } from '../components/RoomCard';
 import { ErrorBox, Loading } from '../components/States';
 import { useLang, type TextKey } from '../i18n/i18n';
-import { shortDate, won } from '../lib/format';
+import { shortDate } from '../lib/format';
 import { useAppState } from '../state/appState';
 import { DocPicker } from './ApplyPage';
 
 interface IMyData
 {
-    apps: ApplicationView[];
-    contracts: ContractView[];
-    moveIn: MoveInView | undefined;
+    inquiries: InquiryView[];
+    rooms: Map<string, RoomView>;
+    document: DocumentView | undefined;
     reports: ReportView[];
     searches: { id: string; query: string }[];
     favoriteRooms: RoomView[];
 }
 
-function Timeline({ app, contract }: { app: ApplicationView; contract: ContractView | undefined })
+// 진행 표시: 보냄 → 연락 옴 → 집 보기 → 계약함
+export function InquirySteps({ status }: { status: InquiryStatus })
 {
     const { t } = useLang();
-    const steps: readonly [TextKey, boolean][] = [
-        ['my.timeline.apply', true],
-        ['my.timeline.call', app.status === 'approved'],
-        ['my.timeline.doc', Boolean(app.document?.checked)],
-        ['my.timeline.sign', Boolean(contract)],
-        ['my.timeline.pay', Boolean(contract?.paid)],
-        ['my.timeline.movein', Boolean(contract?.paid)],
-    ];
+    const at = INQUIRY_STEPS.indexOf(status);
     return (
         <ol className="timeline">
-            {steps.map(([key, done]) => (
-                <li key={key} className={done ? 'is-done' : ''}>
-                    <span className="timeline__dot" aria-hidden="true">{done ? '✓' : ''}</span>
-                    <span className="timeline__label">{t(key)}</span>
-                </li>
-            ))}
+            {INQUIRY_STEPS.map((step, i) =>
+            {
+                const done = status !== 'closed' && i <= at;
+                return (
+                    <li key={step} className={done ? 'is-done' : ''}>
+                        <span className="timeline__dot" aria-hidden="true">{done ? '✓' : ''}</span>
+                        <span className="timeline__label">{t(('inquiry.status.' + step) as TextKey)}</span>
+                    </li>
+                );
+            })}
         </ol>
     );
 }
@@ -51,29 +50,28 @@ export function MyPage()
     const [error, setError] = useState<string | undefined>();
     const [actionError, setActionError] = useState<string | undefined>();
     const [docDraft, setDocDraft] = useState<DocType | undefined>();
-    const [readAll, setReadAll] = useState(false);
-    const [signature, setSignature] = useState('');
-    const [payMethod, setPayMethod] = useState('card');
 
     const load = useCallback(async () =>
     {
         setError(undefined);
-        const [apps, contracts, moveIn, reports, searches] = await Promise.all([
-            poomApi.myApplications(), poomApi.myContracts(), poomApi.moveIn(), poomApi.myReports(), poomApi.savedSearches(),
+        const [inquiries, doc, reports, searches] = await Promise.all([
+            poomApi.myInquiries(), poomApi.myDocument(), poomApi.myReports(), poomApi.savedSearches(),
         ]);
-        if (!apps.ok)
+        if (!inquiries.ok)
         {
-            setError(apps.code);
+            setError(inquiries.code);
             return;
         }
-        const favoriteRooms = (await Promise.all([...favorites].map((id) => poomApi.room(id, [])))).flatMap((r) => (r.ok ? [r.data] : []));
+        const roomIds = [...new Set([...inquiries.data.map((q) => q.roomId), ...favorites])];
+        const found = (await Promise.all(roomIds.map((id) => poomApi.room(id, [])))).flatMap((r) => (r.ok ? [r.data] : []));
+        const rooms = new Map(found.map((r) => [r.roomId, r]));
         setData({
-            apps: apps.data,
-            contracts: contracts.ok ? contracts.data : [],
-            moveIn: moveIn.ok ? moveIn.data : undefined,
+            inquiries: inquiries.data,
+            rooms,
+            document: doc.ok ? doc.data.document ?? undefined : undefined,
             reports: reports.ok ? reports.data : [],
             searches: searches.ok ? searches.data : [],
-            favoriteRooms,
+            favoriteRooms: [...favorites].flatMap((id) => (rooms.has(id) ? [rooms.get(id) as RoomView] : [])),
         });
     }, [favorites]);
 
@@ -113,8 +111,8 @@ export function MyPage()
         await load();
     };
 
-    const active = data?.apps.find((a) => a.status !== 'rejected');
-    const contract = active ? data?.contracts.find((c) => c.applicationId === active.id) : undefined;
+    const open = data?.inquiries.filter((q) => q.status !== 'closed') ?? [];
+    const closedCount = (data?.inquiries.length ?? 0) - open.length;
 
     return (
         <div className="page page--my">
@@ -130,95 +128,60 @@ export function MyPage()
             {data && (
                 <div className="my-grid">
                     <section className="card my-card my-card--main">
-                        <h2>{t('my.applications')}</h2>
-                        {!active && (
+                        <h2>{t('my.inquiries')}</h2>
+                        <p className="muted">{t('my.inquiriesNote')}</p>
+                        {open.length === 0 && (
                             <div className="state state--empty">
                                 <p>{t('my.none')}</p>
                                 <Link className="btn btn--primary" to={path('/rooms')}>{t('nav.rooms')}</Link>
                             </div>
                         )}
-                        {active && (
-                            <>
-                                <p>
-                                    <span className={'tag tag--status-' + active.status}>{t(('my.status.' + active.status) as TextKey)}</span>{' '}
-                                    <Link to={path('/rooms/' + active.roomId)}>{active.roomId}</Link> · {shortDate(active.moveInDate, lang)} · {t('apply.monthsValue', { n: active.months })}
-                                </p>
-                                <Timeline app={active} contract={contract} />
-
-                                {!contract && (
-                                    <div className="my-step">
-                                        {!active.document && (
-                                            <>
-                                                <p className="notice">{t('my.docNeeded')}</p>
-                                                <DocPicker value={docDraft} onChange={setDocDraft} idType={user.idType} />
-                                                <button type="button" className="btn btn--primary btn--block" disabled={!docDraft}
-                                                    onClick={() => void act(() => poomApi.uploadDoc(active.id, docDraft as DocType))}>{t('my.uploadDoc')}</button>
-                                            </>
-                                        )}
-                                        {active.document && !active.document.checked && <p className="notice">⏳ {t('my.docChecking')}</p>}
-                                        {active.document?.checked && <p className="notice notice--ok">✓ {t('my.docOk')}</p>}
-
-                                        {active.status === 'approved' && active.document?.checked && (
-                                            <div className="contract">
-                                                <h3>{t('my.contract')}</h3>
-                                                {lang === 'en' && <p className="notice">{t('my.contractNote')}</p>}
-                                                <div className="contract__doc" tabIndex={0} onScroll={(e) =>
-                                                {
-                                                    const el = e.currentTarget;
-                                                    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 8)
-                                                    {
-                                                        setReadAll(true);
-                                                    }
-                                                }}>
-                                                    <p><strong>제1조 (목적)</strong> 임대인 품(Poom)과 임차인은 아래 방의 주거용 임대차에 합의한다.</p>
-                                                    <p><strong>제2조 (기간 · 비용)</strong> 계약 기간, 보증금, 월 임대료, 관리비는 신청 내용과 방 정보에 따른다.</p>
-                                                    <p><strong>제3조 (보증금 반환)</strong> 퇴실 점검 후 7일 안에 반환하며, 방에 표시된 퇴실 청소비를 뺀다.</p>
-                                                    <p><strong>제4조 (하우스 규칙)</strong> 임차인은 하우스 규칙을 지킨다. 안전을 해치는 행동은 계약 해지 사유가 된다.</p>
-                                                    <p><strong>제5조 (중도 퇴실)</strong> 30일 전에 알리면 위약금이 없다.</p>
-                                                    <p className="muted">테스트판 계약서 예시 — 실제 계약서는 법무 검토 후 확정 (D13-LEGAL)</p>
-                                                </div>
-                                                <label className="toggle">
-                                                    <input type="checkbox" checked={readAll} onChange={(e) => setReadAll(e.target.checked)} />
-                                                    <span>{t('my.readAll')}</span>
-                                                </label>
-                                                <label className="field">
-                                                    <span className="field__label">{t('my.signature')}</span>
-                                                    <input className="input input--signature" value={signature} onChange={(e) => setSignature(e.target.value)} />
-                                                </label>
-                                                <button type="button" className="btn btn--primary btn--block" disabled={!readAll || signature.trim().length < 2}
-                                                    onClick={() => void act(() => poomApi.sign(active.id, signature))}>{t('my.sign')}</button>
+                        <ul className="inquiry-list">
+                            {open.map((q) =>
+                            {
+                                const room = data.rooms.get(q.roomId);
+                                return (
+                                    <li key={q.id} className="inquiry">
+                                        <p className="inquiry__head">
+                                            <Link to={path('/rooms/' + q.roomId)}>{room ? (lang === 'en' ? room.houseNameEn : room.houseNameKo) : t('my.roomGone')}</Link>
+                                            {room && <span className="muted"> · {t(room.listedBy === 'agent' ? 'ad.byAgent' : 'ad.byOwner')} {lang === 'en' ? room.advertiserNameEn : room.advertiserNameKo}</span>}
+                                        </p>
+                                        <p className="muted">{shortDate(q.moveInDate, lang)} · {t('apply.monthsValue', { n: q.months })}</p>
+                                        <InquirySteps status={q.status} />
+                                        {q.status !== 'contracted' && (
+                                            <div className="btn-row btn-row--start">
+                                                {q.docShared
+                                                    ? <span className="tag tag--fit">📄 {t('my.docSent')}</span>
+                                                    : <button type="button" className="btn btn--outline btn--small" disabled={!data.document} onClick={() => void act(() => poomApi.shareDoc(q.id))}>📄 {t('my.shareDoc')}</button>}
+                                                <button type="button" className="btn btn--ghost btn--small" disabled={!q.docShared} onClick={() => void act(() => poomApi.setInquiryStatus(q.id, 'contracted'))}>{t('my.markContracted')}</button>
+                                                <button type="button" className="btn btn--ghost btn--small" onClick={() => void act(() => poomApi.setInquiryStatus(q.id, 'closed'))}>{t('my.closeInquiry')}</button>
                                             </div>
                                         )}
-                                    </div>
-                                )}
+                                        {!data.document && q.status !== 'contracted' && <p className="muted">{t('my.docFirst')}</p>}
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                        {closedCount > 0 && <p className="muted">{t('my.closedCount', { n: closedCount })}</p>}
+                    </section>
 
-                                {contract && !contract.paid && (
-                                    <div className="my-step">
-                                        <h3>{t('my.pay')}</h3>
-                                        <p>{t('my.contractSummary', { months: contract.months, deposit: won(contract.deposit, lang), monthly: won(contract.rent + contract.fee, lang) })}</p>
-                                        <p className="price-big">{t('my.payAmount', { amount: won(contract.deposit + contract.rent + contract.fee, lang) })}</p>
-                                        <div className="seg seg--wrap">
-                                            {(['card', 'transfer', 'easy'] as const).map((m) => (
-                                                <button type="button" key={m} className={payMethod === m ? 'seg__on' : ''} aria-pressed={payMethod === m} onClick={() => setPayMethod(m)}>{t(('my.payMethod.' + m) as TextKey)}</button>
-                                            ))}
-                                        </div>
-                                        {__APP_CHANNEL__ === 'test' && <p className="muted">🧪 {t('my.payMock')}</p>}
-                                        <button type="button" className="btn btn--primary btn--block" onClick={() => void act(() => poomApi.pay(contract.id, payMethod))}>{t('my.pay')}</button>
-                                    </div>
-                                )}
-
-                                {data.moveIn && (
-                                    <div className="my-step movein">
-                                        <h3>🏡 {t('my.movein')}</h3>
-                                        <dl className="kv">
-                                            <dt>{t('my.address')}</dt><dd>{data.moveIn.address}</dd>
-                                            <dt>{t('my.entry')}</dt><dd>{lang === 'en' ? data.moveIn.entryInfoEn : data.moveIn.entryInfoKo}</dd>
-                                        </dl>
-                                        <ul className="rules">{(lang === 'en' ? data.moveIn.rulesEn : data.moveIn.rulesKo).map((r) => <li key={r}>{r}</li>)}</ul>
-                                    </div>
-                                )}
-                            </>
+                    <section className="card my-card" id="docbox">
+                        <h2>📄 {t('my.docBox')}</h2>
+                        <p className="muted">{t('my.docBoxNote')}</p>
+                        {data.document && (
+                            <p className={'notice' + (data.document.checked ? ' notice--ok' : '')}>
+                                {data.document.checked ? '✓ ' + t('my.docOk') : '⏳ ' + t('my.docChecking')} · {t(('doc.' + data.document.docType) as TextKey)}
+                            </p>
                         )}
+                        <DocPicker value={docDraft} onChange={setDocDraft} idType={user.idType} />
+                        <button type="button" className="btn btn--primary btn--block" disabled={!docDraft}
+                            onClick={() => void act(() => poomApi.uploadDoc(docDraft as DocType))}>{data.document ? t('my.replaceDoc') : t('my.uploadDoc')}</button>
+                    </section>
+
+                    <section className="card my-card">
+                        <h2>📣 {t('my.advertiserTitle')}</h2>
+                        <p className="muted">{t('my.advertiserNote')}</p>
+                        <Link className="btn btn--outline btn--block" to={path('/advertise')}>{t('nav.advertise')}</Link>
                     </section>
 
                     <section className="card my-card">

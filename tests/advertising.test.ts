@@ -102,7 +102,7 @@ describe('광고 게시 (품은 광고판)', () =>
         expect(lead).toEqual({ ok: false, error: AppError.InvalidInput });
     });
 
-    it('광고 기간이 끝나면 방 찾기 · 상세에서 사라진다', async () =>
+    it('광고 기간이 끝나면 방 찾기 · 상세 · 검색 추천에서 사라진다', async () =>
     {
         const { c, clock } = makeContainer();
         const { roomId } = await liveAgentListingAsync(c);
@@ -113,6 +113,7 @@ describe('광고 게시 (품은 광고판)', () =>
 
         expect(detail).toEqual({ ok: false, error: AppError.NotFound });
         expect(search.some((v) => v.roomId === roomId)).toBe(false);
+        expect(unwrap(await c.search.suggestAsync('망원동 투룸')).some((s) => s.kind === 'house')).toBe(false);
     });
 
     it('반려는 이유가 있어야 하고, 내린 광고는 바로 안 보인다', async () =>

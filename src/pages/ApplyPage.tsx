@@ -1,4 +1,5 @@
-// 간단 신청 3단계 (SCR_APPLY_01 ~ 03) + 서류 1장 (POL_HOUSE_02)
+// 문의하기 3단계 (SCR_APPLY_01 ~ 03): 품은 광고한 분에게 전달만 하고, 계약은 광고한 분과 직접 (POL_INQUIRY)
+// 서류는 내 집 > 서류함에 한 번 올리고 보낼 곳을 고름 (POL_DOCBOX)
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { poomApi } from '../api/poomApi';
@@ -53,8 +54,7 @@ export function ApplyPage()
     const [consultLang, setConsultLang] = useState<'ko' | 'en'>(lang);
     const [situation, setSituation] = useState('');
     const [urgency, setUrgency] = useState<'now' | 'week' | 'month' | undefined>();
-    const [docType, setDocType] = useState<DocType | undefined>();
-    const [later, setLater] = useState(false);
+    const [agree, setAgree] = useState(false);
     const [error, setError] = useState<string | undefined>();
     const [busy, setBusy] = useState(false);
 
@@ -88,7 +88,7 @@ export function ApplyPage()
         setBusy(true);
         setError(undefined);
         setChildren(family);
-        const result = await poomApi.apply({
+        const result = await poomApi.inquire({
             roomId,
             moveInDate: moveIn,
             months,
@@ -97,12 +97,12 @@ export function ApplyPage()
             consultLang,
             situation,
             urgency,
-            docType: later ? undefined : docType,
+            agree,
         });
         setBusy(false);
         if (result.ok)
         {
-            navigate(path('/apply/done') + (later || !docType ? '?doc=later' : ''));
+            navigate(path('/apply/done'));
         }
         else
         {
@@ -110,11 +110,12 @@ export function ApplyPage()
         }
     };
 
-    const canNext = step === 1 ? Boolean(moveIn) : step === 2 ? family.length > 0 : (later || Boolean(docType));
+    const canNext = step === 1 ? Boolean(moveIn) : step === 2 ? family.length > 0 : agree;
 
     return (
         <div className="page page--narrow has-cta">
             <p className="muted"><Link to={path('/rooms/' + roomId)}>← {lang === 'en' ? room.houseNameEn : room.houseNameKo}</Link> · {won(room.monthly, lang)}</p>
+            <p className="notice">📮 {t('apply.toAdvertiser', { name: lang === 'en' ? room.advertiserNameEn : room.advertiserNameKo })}</p>
             <h1>{t('apply.title')}</h1>
             <div className="progress" role="progressbar" aria-valuemin={1} aria-valuemax={3} aria-valuenow={step} aria-label={t('apply.step', { n: step })}>
                 {[1, 2, 3].map((n) => <span key={n} className={'progress__dot' + (n <= step ? ' is-on' : '')} />)}
@@ -176,12 +177,11 @@ export function ApplyPage()
                         <textarea className="input" rows={6} maxLength={1000} value={situation} onChange={(e) => setSituation(e.target.value)} placeholder={t('apply.situationPlaceholder')} aria-describedby="situation-help situation-count" />
                         <span className="muted field__count" id="situation-count">🔒 {t('apply.situationPrivate')} · {situation.length} / 1000</span>
                     </label>
-                    {!later && <DocPicker value={docType} onChange={setDocType} idType={user?.idType ?? 'kr'} />}
-                    <label className="toggle">
-                        <input type="checkbox" checked={later} onChange={(e) => setLater(e.target.checked)} />
-                        <span>{t('apply.docLater')}</span>
+                    <label className="toggle toggle--agree">
+                        <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
+                        <span>{t('apply.agree')}</span>
                     </label>
-                    {later && <p className="notice">{t('apply.docLaterNote')}</p>}
+                    <p className="muted">📄 {t('apply.docBoxNote')}</p>
                 </div>
             )}
 
@@ -201,14 +201,13 @@ export function ApplyDonePage()
     const { t, path } = useLang();
     const hour = new Date().getHours();
     const night = hour < 9 || hour >= 21;
-    const later = new URLSearchParams(location.search).get('doc') === 'later';
     return (
         <div className="page page--narrow">
             <div className="state state--empty">
                 <span className="state__icon" aria-hidden="true">🎉</span>
                 <h1 className="state__title">{t('apply.doneTitle')}</h1>
                 <p>{night ? t('apply.doneNight') : t('apply.doneSub')}</p>
-                {later && <p className="notice">{t('my.docNeeded')}</p>}
+                <p className="notice">📄 {t('apply.doneDoc')}</p>
                 <Link className="btn btn--primary" to={path('/my')}>{t('apply.goMy')}</Link>
             </div>
         </div>

@@ -119,7 +119,7 @@ export function HomePage()
             </section>
 
             <section className="section">
-                <Link to={path('/partner')} className="cta-card">
+                <Link to={path('/advertise')} className="cta-card">
                     <span aria-hidden="true">🤝</span>
                     <span>{t('home.partnerCta')}</span>
                     <span aria-hidden="true">→</span>

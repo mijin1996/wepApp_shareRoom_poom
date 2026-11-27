@@ -1,10 +1,40 @@
 {
   "items": [
-    { "q_ko": "어떤 서류가 필요해요?", "a_ko": "주민등록등본 또는 한부모가족 증명서 중 하나만 휴대폰 사진으로 올리면 돼요. 외국인은 외국인등록사실증명 1장이에요. 계약서에 서명하기 전까지만 내면 돼요.", "q_en": "What documents do I need?", "a_en": "Just one photo: a resident registration copy or a single-parent family certificate. Foreign residents send a Certificate of Alien Registration. Upload it before signing." },
-    { "q_ko": "얼마나 빨리 들어갈 수 있어요?", "a_ko": "운영 시간(09~21시)에 신청하면 2시간 안에 전화드려요. 빈방이면 계약 · 결제 후 그날 바로 들어올 수 있어요.", "q_en": "How soon can I move in?", "a_en": "Apply between 9 am and 9 pm and we call within 2 hours. If the room is vacant, you can move in the same day after signing and paying." },
-    { "q_ko": "보증금은 언제 돌려받아요?", "a_ko": "퇴실 점검 후 7일 안에 돌려드려요. 방마다 표시된 퇴실 청소비만 빠져요.", "q_en": "When do I get my deposit back?", "a_en": "Within 7 days after the move-out check, minus the cleaning fee shown on each room." },
-    { "q_ko": "왜 어떤 방은 신청이 안 돼요?", "a_ko": "가족 수와 자녀 나이에 맞는 방만 신청할 수 있어요. 공공 기준(최저주거기준)에 따라 만 6세 이상 자녀는 부모와 다른 침실, 만 8세 이상 남매는 서로 다른 침실이 필요해요.", "q_en": "Why can't I apply for some rooms?", "a_en": "Rooms must fit your family. Under the national minimum housing standard, children 6+ need a separate bedroom from the parent, and brothers and sisters 8+ need separate bedrooms." },
-    { "q_ko": "자녀가 대학생이어도 돼요?", "a_ko": "네, 만 24세 이하 자녀와 함께 사는 한부모 가정이면 돼요.", "q_en": "Can my child be a university student?", "a_en": "Yes. Single parents living with children aged 24 or younger can apply." },
-    { "q_ko": "외국인도 신청할 수 있어요?", "a_ko": "네. 영어로 신청 · 상담 · 계약할 수 있어요.", "q_en": "Can foreign residents apply?", "a_en": "Yes. You can apply, talk with us and sign in English." }
+    {
+      "q_ko": "어떤 서류가 필요해요?",
+      "a_ko": "주민등록등본 또는 한부모가족 증명서 중 하나만 휴대폰 사진으로 내 집 > 서류함에 올리면 돼요. 외국인은 외국인등록사실증명 1장이에요. 보낼 곳은 직접 고르고, 계약 전에 꼭 광고한 분에게 보내야 해요.",
+      "q_en": "What documents do I need?",
+      "a_en": "Just one photo in My home > Document box: a resident registration copy or a single-parent family certificate (foreign residents: Certificate of Alien Registration). You choose who receives it, and you must send it before signing."
+    },
+    {
+      "q_ko": "얼마나 빨리 들어갈 수 있어요?",
+      "a_ko": "문의를 보내면 광고한 공인중개사 · 집주인이 남겨 주신 시간에 연락해요. 집을 보고 광고한 분과 직접 계약하면 바로 들어갈 수 있어요. 품은 계약 · 방값에 끼지 않고 수수료도 받지 않아요.",
+      "q_en": "How soon can I move in?",
+      "a_en": "After you send an inquiry, the agent or owner calls you at the time you chose. View the room and sign directly with them to move in. Poom is not part of the contract or rent and charges you nothing."
+    },
+    {
+      "q_ko": "보증금은 언제 돌려받아요?",
+      "a_ko": "퇴실 점검 후 7일 안에 돌려드려요. 방마다 표시된 퇴실 청소비만 빠져요.",
+      "q_en": "When do I get my deposit back?",
+      "a_en": "Within 7 days after the move-out check, minus the cleaning fee shown on each room."
+    },
+    {
+      "q_ko": "왜 어떤 방은 문의가 안 돼요?",
+      "a_ko": "가족 수와 자녀 나이에 맞는 방만 문의할 수 있어요. 공공 기준(최저주거기준)에 따라 만 6세 이상 자녀는 부모와 다른 침실, 만 8세 이상 남매는 서로 다른 침실이 필요해요.",
+      "q_en": "Why can't I ask about some rooms?",
+      "a_en": "Rooms must fit your family. Under the national minimum housing standard, children 6+ need a separate bedroom from the parent, and brothers and sisters 8+ need separate bedrooms."
+    },
+    {
+      "q_ko": "자녀가 대학생이어도 돼요?",
+      "a_ko": "네, 만 24세 이하 자녀와 함께 사는 한부모 가정이면 돼요.",
+      "q_en": "Can my child be a university student?",
+      "a_en": "Yes. Single parents living with children aged 24 or younger can apply."
+    },
+    {
+      "q_ko": "외국인도 문의할 수 있어요?",
+      "a_ko": "네. 영어로 문의할 수 있어요. 계약 언어는 광고한 분과 정해요.",
+      "q_en": "Can foreign residents ask?",
+      "a_en": "Yes. You can send inquiries in English. Agree on the contract language with the lister."
+    }
   ]
 }

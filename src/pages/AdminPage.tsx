@@ -1,13 +1,15 @@
-// 운영 콘솔 (D09-ADMIN): 신청 승인 · 서류 확인 · 신고함(상태 · 심각도 · 처리 기록) · 지역 수요 · 제휴 문의
-import { useCallback, useEffect, useState } from 'react';
+// 운영 콘솔 (D09-ADMIN): 광고주 · 광고 확인 · 서류 확인 · 문의 통계 · 매출 · 혜택 · 제안 문의 · 신고함 · 공지 · 커뮤니티 · 지역 수요
+import { Fragment, useCallback, useEffect, useState } from 'react';
 import { getAdminKey, setAdminKey } from '../api/http';
 import { poomApi } from '../api/poomApi';
-import type { AdminQuestion, NoticeDraft, NoticeView, ApplicationView, DemandView, PartnerView, ReportView } from '../api/types';
+import type { AdminQuestion, AdvertiserView, DemandView, DocumentView, InquiryStatsView, InquiryView, ListingView, NoticeDraft, NoticeView, PerkDraft, PerkView, ProposalView, ReportView, RevenueView } from '../api/types';
 import { ErrorBox } from '../components/States';
 import { useLang, type TextKey } from '../i18n/i18n';
+import { won } from '../lib/format';
 import { describe } from '../lib/trail';
 
-type Tab = 'apps' | 'reports' | 'notices' | 'community' | 'demand' | 'partners';
+const TABS = ['ads', 'docs', 'inquiries', 'revenue', 'perks', 'proposals', 'reports', 'notices', 'community', 'demand'] as const;
+type Tab = typeof TABS[number];
 const STATUSES = ['received', 'checking', 'in_progress', 'done', 'on_hold', 'duplicate'];
 const SEVERITIES = ['critical', 'high', 'normal', 'low'];
 const PRIORITIES = ['P1', 'P2', 'P3'];
@@ -196,34 +198,106 @@ function CommunityItem({ question, onSaved }: { question: AdminQuestion; onSaved
     );
 }
 
-export function AdminPage()
+const EMPTY_PERK: PerkDraft = { kind: 'partner', action: 'request', url: '', providerKo: '', providerEn: '', titleKo: '', titleEn: '', descKo: '', descEn: '', active: true };
+
+function PerkEditor({ perk, onSaved }: { perk?: PerkView; onSaved: () => void })
 {
     const { t } = useLang();
+    const [draft, setDraft] = useState<PerkDraft>(perk ? { kind: perk.kind, action: perk.action, url: perk.url, providerKo: perk.providerKo, providerEn: perk.providerEn, titleKo: perk.titleKo, titleEn: perk.titleEn, descKo: perk.descKo, descEn: perk.descEn, active: perk.active } : EMPTY_PERK);
+    const [error, setError] = useState<string | undefined>();
+    const set = <K extends keyof PerkDraft>(k: K, v: PerkDraft[K]) => setDraft((d) => ({ ...d, [k]: v }));
+
+    const save = async () =>
+    {
+        const r = perk ? await poomApi.admin.updatePerk(perk.id, draft) : await poomApi.admin.createPerk(draft);
+        if (r.ok)
+        {
+            setError(undefined);
+            if (!perk)
+            {
+                setDraft(EMPTY_PERK);
+            }
+            onSaved();
+        }
+        else
+        {
+            setError(r.code);
+        }
+    };
+
+    return (
+        <div className="form">
+            <div className="seg seg--wrap">
+                {(['partner', 'sponsor', 'institution'] as const).map((k) => (
+                    <button type="button" key={k} className={draft.kind === k ? 'seg__on' : ''} aria-pressed={draft.kind === k} onClick={() => set('kind', k)}>{t(('perk.kind.' + k) as TextKey)}</button>
+                ))}
+            </div>
+            <div className="seg seg--wrap">
+                {(['request', 'link'] as const).map((k) => (
+                    <button type="button" key={k} className={draft.action === k ? 'seg__on' : ''} aria-pressed={draft.action === k} onClick={() => set('action', k)}>{t(('admin.perkAction.' + k) as TextKey)}</button>
+                ))}
+            </div>
+            {draft.action === 'link' && <input className="input" value={draft.url} onChange={(e) => set('url', e.target.value)} placeholder="https://" />}
+            <input className="input" value={draft.providerKo} onChange={(e) => set('providerKo', e.target.value)} placeholder={t('admin.perkProvider')} />
+            <input className="input" value={draft.titleKo} onChange={(e) => set('titleKo', e.target.value)} placeholder={t('admin.noticeTitleKo')} maxLength={60} />
+            <textarea className="input" rows={3} value={draft.descKo} onChange={(e) => set('descKo', e.target.value)} placeholder={t('admin.noticeBodyKo')} maxLength={1000} />
+            <input className="input" value={draft.titleEn} onChange={(e) => set('titleEn', e.target.value)} placeholder={t('admin.noticeTitleEn')} maxLength={60} lang="en" />
+            <textarea className="input" rows={2} value={draft.descEn} onChange={(e) => set('descEn', e.target.value)} placeholder={t('admin.noticeBodyEn')} maxLength={1000} lang="en" />
+            <label className="toggle">
+                <input type="checkbox" checked={draft.active} onChange={(e) => set('active', e.target.checked)} />
+                <span>{t('admin.perkActive')}</span>
+            </label>
+            {error && <ErrorBox code={error} />}
+            <button type="button" className="btn btn--primary btn--small" onClick={() => void save()}>{t('admin.save')}</button>
+        </div>
+    );
+}
+
+export function AdminPage()
+{
+    const { t, lang } = useLang();
     const [key, setKey] = useState(getAdminKey());
     const [entered, setEntered] = useState(Boolean(getAdminKey()));
-    const [tab, setTab] = useState<Tab>('apps');
-    const [apps, setApps] = useState<ApplicationView[]>([]);
+    const [tab, setTab] = useState<Tab>('ads');
+    const [advertisers, setAdvertisers] = useState<AdvertiserView[]>([]);
+    const [listings, setListings] = useState<ListingView[]>([]);
+    const [documents, setDocuments] = useState<DocumentView[]>([]);
+    const [inquiries, setInquiries] = useState<InquiryView[]>([]);
+    const [stats, setStats] = useState<InquiryStatsView | undefined>();
+    const [revenue, setRevenue] = useState<RevenueView[]>([]);
+    const [perks, setPerks] = useState<{ perk: PerkView; requests: number }[]>([]);
+    const [proposals, setProposals] = useState<ProposalView[]>([]);
     const [reports, setReports] = useState<ReportView[]>([]);
     const [demand, setDemand] = useState<DemandView[]>([]);
-    const [partners, setPartners] = useState<PartnerView[]>([]);
     const [community, setCommunity] = useState<AdminQuestion[]>([]);
     const [notices, setNotices] = useState<NoticeView[]>([]);
+    const [rejectReason, setRejectReason] = useState('');
     const [error, setError] = useState<string | undefined>();
 
     const load = useCallback(async () =>
     {
-        const [a, r, d, p, q, n] = await Promise.all([poomApi.admin.applications(), poomApi.admin.reports(), poomApi.admin.demand(), poomApi.admin.partners(), poomApi.admin.community(), poomApi.admin.notices()]);
-        if (!a.ok)
+        const [adv, lst, doc, inq, st, rev, pk, prp, r, d, q, n] = await Promise.all([
+            poomApi.admin.advertisers(), poomApi.admin.listings(), poomApi.admin.documents(), poomApi.admin.inquiries(), poomApi.admin.stats(),
+            poomApi.admin.revenue(), poomApi.admin.perks(), poomApi.admin.proposals(),
+            poomApi.admin.reports(), poomApi.admin.demand(), poomApi.admin.community(), poomApi.admin.notices(),
+        ]);
+        if (!adv.ok)
         {
-            setError(a.code);
+            setError(adv.code);
             setEntered(false);
             return;
         }
         setError(undefined);
-        setApps(a.data);
+        setAdvertisers(adv.data);
+        setListings(lst.ok ? lst.data : []);
+        setDocuments(doc.ok ? doc.data : []);
+        setInquiries(inq.ok ? inq.data : []);
+        setStats(st.ok ? st.data : undefined);
+        setRevenue(rev.ok ? rev.data : []);
+        setPerks(pk.ok ? pk.data : []);
+        setProposals(prp.ok ? prp.data : []);
         setReports(r.ok ? r.data : []);
         setDemand(d.ok ? d.data : []);
-        setPartners(p.ok ? p.data : []);
         setNotices(n.ok ? n.data : []);
         // 신고 많은 글 → 답변 대기 글 → 최신 순
         const needsTeam = (x: AdminQuestion) => !x.answers.some((ans) => ans.official && !ans.hidden);
@@ -262,11 +336,29 @@ export function AdminPage()
         );
     }
 
-    const decide = async (id: string, decision: string) =>
+    const run = (p: Promise<{ ok: boolean; code?: string }>) =>
     {
-        await poomApi.admin.decide(id, decision);
-        await load();
+        void p.then(async (r) =>
+        {
+            setError(r.ok ? undefined : r.code);
+            await load();
+        });
     };
+
+    const waiting: Record<Tab, number> = {
+        ads: advertisers.filter((a) => a.status === 'pending').length + listings.filter((l) => l.status === 'review').length,
+        docs: documents.filter((d) => !d.checked).length,
+        inquiries: inquiries.length,
+        revenue: 0,
+        perks: 0,
+        proposals: proposals.filter((p) => p.status === 'new').length,
+        reports: reports.filter((r) => r.status !== 'done').length,
+        notices: 0,
+        community: community.length,
+        demand: 0,
+    };
+    const totalPaid = revenue.reduce((s, r) => s + r.paid, 0);
+    const totalUnpaid = revenue.reduce((s, r) => s + r.unpaid, 0);
 
     return (
         <div className="page page--admin">
@@ -275,30 +367,145 @@ export function AdminPage()
                 <button type="button" className="btn btn--ghost btn--small" onClick={() => void load()}>↻ {t('admin.refresh')}</button>
             </div>
             <div className="seg seg--wrap admin-tabs" role="tablist">
-                {(['apps', 'reports', 'notices', 'community', 'demand', 'partners'] as const).map((k) => (
+                {TABS.map((k) => (
                     <button type="button" role="tab" key={k} aria-selected={tab === k} className={tab === k ? 'seg__on' : ''} onClick={() => setTab(k)}>
                         {t(('admin.tab.' + k) as TextKey)}
                         {k === 'reports' && reports.some((r) => r.kind === 'safety' && r.status !== 'done') ? ' 🛡' : ''}
-                        {k === 'apps' ? ` (${apps.length})` : k === 'reports' ? ` (${reports.length})` : k === 'community' ? ` (${community.length})` : ''}
+                        {waiting[k] > 0 ? ` (${waiting[k]})` : ''}
                     </button>
                 ))}
             </div>
+            {error && <ErrorBox code={error} />}
 
-            {tab === 'apps' && (
+            {tab === 'ads' && (
                 <div className="admin-list">
-                    {apps.length === 0 && <p className="muted">{t('admin.empty')}</p>}
-                    {apps.map((a) => (
-                        <article key={a.id} className="card admin-app">
-                            <p><strong>{a.id}</strong> · {a.roomId} · <span className="tag">{a.status}</span> · {a.consultLang === 'en' ? '🇬🇧 EN' : '한국어'} · {a.contactTime}</p>
-                            <p className="muted">{a.moveInDate} · {a.months}m · {a.children.map((c) => c.ageBand + c.gender).join(', ')}</p>
-                            {a.urgency && <p><span className={'tag' + (a.urgency === 'now' ? ' tag--danger' : '')}>{t(('apply.urgency.' + a.urgency) as TextKey)}</span></p>}
-                            {a.situation && <p className="admin-situation">{a.situation}</p>}
-                            <p>{a.document ? `📄 ${a.document.docType} ${a.document.checked ? '✓' : '⏳'}` : t('admin.noDoc')}</p>
+                    <h2>{t('admin.advertisers')}</h2>
+                    {advertisers.length === 0 && <p className="muted">{t('admin.empty')}</p>}
+                    {advertisers.map((a) => (
+                        <article key={a.id} className="card">
+                            <p><span className="tag">{t(('ad.kind.' + a.kind) as TextKey)}</span> <strong>{a.nameKo}</strong> · <span className="tag tag--muted">{t(('admin.verify.' + a.status) as TextKey)}</span></p>
+                            <p className="muted">{a.kind === 'agent' ? t('ad.regNo') + ' ' + a.agentRegNo : '📄 ' + t('ad.ownershipDoc') + (a.ownershipDoc ? ' ✓' : ' ✗')}{a.subscriptionUntil && ' · ' + t('ad.planUntil', { date: a.subscriptionUntil })}</p>
+                            {a.status === 'pending' && (
+                                <div className="btn-row btn-row--start">
+                                    <button type="button" className="btn btn--primary btn--small" onClick={() => run(poomApi.admin.verifyAdvertiser(a.id, true))}>{t('admin.approve')}</button>
+                                    <button type="button" className="btn btn--ghost btn--small" onClick={() => run(poomApi.admin.verifyAdvertiser(a.id, false))}>{t('admin.reject')}</button>
+                                </div>
+                            )}
+                        </article>
+                    ))}
+                    <h2>{t('admin.listings')}</h2>
+                    <p className="muted">{t('admin.listingHint')}</p>
+                    {listings.length === 0 && <p className="muted">{t('admin.empty')}</p>}
+                    {listings.map((l) => (
+                        <article key={l.id} className="card">
+                            <p><span className={'tag tag--listing-' + l.status}>{t(('ad.status.' + l.status) as TextKey)}</span> <strong>{l.draft.titleKo}</strong> · {l.advertiserId}</p>
+                            <p className="muted">{t('card.bedrooms', { n: l.draft.bedrooms })} · {l.draft.privateM2}㎡ · {won(l.draft.deposit, lang)} / {won(l.draft.rent + l.draft.fee, lang)} · {l.draft.availableFrom}</p>
+                            {l.draft.descriptionKo && <p className="admin-situation">{l.draft.descriptionKo}</p>}
                             <div className="btn-row btn-row--start">
-                                {a.document && !a.document.checked && <button type="button" className="btn btn--outline btn--small" onClick={() => void poomApi.admin.checkDoc(a.id).then(load)}>{t('admin.docCheck')}</button>}
-                                {a.status !== 'approved' && <button type="button" className="btn btn--primary btn--small" onClick={() => void decide(a.id, 'approve')}>{t('admin.approve')}</button>}
-                                <button type="button" className="btn btn--ghost btn--small" onClick={() => void decide(a.id, 'hold')}>{t('admin.hold')}</button>
-                                <button type="button" className="btn btn--ghost btn--small" onClick={() => void decide(a.id, 'reject')}>{t('admin.reject')}</button>
+                                {l.status === 'review' && (
+                                    <>
+                                        <button type="button" className="btn btn--primary btn--small" onClick={() => run(poomApi.admin.approveListing(l.id))}>{t('admin.approve')}</button>
+                                        <input className="input input--inline" value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder={t('admin.rejectReason')} />
+                                        <button type="button" className="btn btn--ghost btn--small" disabled={rejectReason.trim().length < 2} onClick={() => run(poomApi.admin.rejectListing(l.id, rejectReason))}>{t('admin.reject')}</button>
+                                    </>
+                                )}
+                                {(l.status === 'live' || l.status === 'approved') && (
+                                    <button type="button" className="btn btn--ghost btn--small" onClick={() => run(poomApi.admin.endListing(l.id))}>{t('admin.forceEnd')}</button>
+                                )}
+                            </div>
+                        </article>
+                    ))}
+                </div>
+            )}
+
+            {tab === 'docs' && (
+                <div className="admin-list">
+                    <p className="muted">{t('admin.docsHint')}</p>
+                    {documents.length === 0 && <p className="muted">{t('admin.empty')}</p>}
+                    {documents.map((d) => (
+                        <article key={d.id + String(d.checked)} className="card">
+                            <p>📄 {t(('doc.' + d.docType) as TextKey)} · {d.id} · {d.uploadedAt.slice(0, 16).replace('T', ' ')} {d.checked ? '✓' : '⏳'}</p>
+                            {!d.checked && <button type="button" className="btn btn--outline btn--small" onClick={() => run(poomApi.admin.checkDoc(d.id))}>{t('admin.docCheck')}</button>}
+                        </article>
+                    ))}
+                </div>
+            )}
+
+            {tab === 'inquiries' && (
+                <div className="admin-list">
+                    {stats && (
+                        <div className="card">
+                            <h2>{t('admin.statsTitle')}</h2>
+                            <p className="muted">{t('admin.statsHint')}</p>
+                            <dl className="kv">
+                                <dt>{t('admin.statsTotal')}</dt><dd>{stats.total}</dd>
+                                {(['sent', 'contacted', 'viewing', 'contracted', 'closed'] as const).map((s) => (
+                                    <Fragment key={s}><dt>{t(('inquiry.status.' + s) as TextKey)}</dt><dd>{stats.byStatus[s]}</dd></Fragment>
+                                ))}
+                                <dt>🚨 {t('apply.urgency.now')}</dt><dd>{stats.urgentNow}</dd>
+                                <dt>📄 {t('admin.statsDocs')}</dt><dd>{stats.docsChecked}</dd>
+                            </dl>
+                            <ul className="list">
+                                {stats.byGu.map((g) => <li key={g.gu} className="list__row"><span className="list__main">{g.gu || '—'}</span><span>{g.count}</span></li>)}
+                            </ul>
+                        </div>
+                    )}
+                    {inquiries.map((q) => (
+                        <article key={q.id} className="card admin-app">
+                            <p><strong>{q.id}</strong> · {q.roomId} · <span className="tag">{t(('inquiry.status.' + q.status) as TextKey)}</span> · {q.advertiserId}</p>
+                            <p className="muted">{q.moveInDate} · {q.months}m · {q.children.map((c) => c.ageBand + c.gender).join(', ')} {q.docShared ? '· 📄' : ''}</p>
+                        </article>
+                    ))}
+                </div>
+            )}
+
+            {tab === 'revenue' && (
+                <div className="admin-list">
+                    <p className="muted">{t('admin.revenueHint')}</p>
+                    <ul className="list">
+                        {revenue.map((r) => (
+                            <li key={r.productId} className="list__row">
+                                <span className="list__main">{t(('ad.product.' + r.productId) as TextKey)} · {r.count}</span>
+                                <span>{won(r.paid, lang)}{r.unpaid > 0 ? ` (+${won(r.unpaid, lang)} ⏳)` : ''}</span>
+                            </li>
+                        ))}
+                        <li className="list__row"><strong className="list__main">{t('admin.revenueTotal')}</strong><strong>{won(totalPaid, lang)}{totalUnpaid > 0 ? ` (+${won(totalUnpaid, lang)} ⏳)` : ''}</strong></li>
+                    </ul>
+                </div>
+            )}
+
+            {tab === 'perks' && (
+                <div className="admin-list">
+                    <p className="muted">{t('admin.perksHint')}</p>
+                    <details className="card report">
+                        <summary className="report__summary"><strong>＋ {t('admin.perkNew')}</strong></summary>
+                        <div className="report__body"><PerkEditor onSaved={() => void load()} /></div>
+                    </details>
+                    {perks.map(({ perk, requests }) => (
+                        <details key={perk.id + perk.titleKo + String(perk.active)} className="card report">
+                            <summary className="report__summary">
+                                <span className={'tag tag--perk-' + perk.kind}>{t(('perk.kind.' + perk.kind) as TextKey)}</span>
+                                {!perk.active && <span className="tag tag--danger">{t('admin.noticeDown')}</span>}
+                                <span className="report__msg">{perk.titleKo}</span>
+                                <span className="muted">{t('admin.perkUse', { clicks: perk.clicks, requests })}</span>
+                            </summary>
+                            <div className="report__body"><PerkEditor perk={perk} onSaved={() => void load()} /></div>
+                        </details>
+                    ))}
+                </div>
+            )}
+
+            {tab === 'proposals' && (
+                <div className="admin-list">
+                    {proposals.length === 0 && <p className="muted">{t('admin.empty')}</p>}
+                    {proposals.map((p) => (
+                        <article key={p.id + p.status} className="card">
+                            <p><span className="tag">{t(('contact.kind.' + p.kind) as TextKey)}</span> <strong>{p.org || p.name || '—'}</strong> · {p.contact} · {p.createdAt.slice(0, 10)}</p>
+                            <p className="admin-situation">{p.message}</p>
+                            <div className="seg seg--wrap">
+                                {(['new', 'in_progress', 'done'] as const).map((s) => (
+                                    <button type="button" key={s} className={p.status === s ? 'seg__on' : ''} aria-pressed={p.status === s} onClick={() => run(poomApi.admin.setProposalStatus(p.id, s))}>{t(('admin.proposal.' + s) as TextKey)}</button>
+                                ))}
                             </div>
                         </article>
                     ))}
@@ -352,18 +559,6 @@ export function AdminPage()
                             </li>
                         ))}
                     </ul>
-                </div>
-            )}
-
-            {tab === 'partners' && (
-                <div className="admin-list">
-                    {partners.length === 0 && <p className="muted">{t('admin.empty')}</p>}
-                    {partners.map((p) => (
-                        <article key={p.id} className="card">
-                            <p><strong>{p.kind}</strong> · {p.gu} · {p.rooms} · {p.contact}</p>
-                            <p className="muted">{p.message}</p>
-                        </article>
-                    ))}
                 </div>
             )}
         </div>

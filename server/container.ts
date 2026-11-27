@@ -62,7 +62,7 @@ export function createContainer(options: ContainerOptions = {})
     return {
         notifier,
         rooms: new RoomService(housing, clock),
-        search: new SearchService(housing, memoryRepo()),
+        search: new SearchService(housing, memoryRepo(), clock),
         auth: new AuthService(users, memoryRepo(), new MockIdentityVerifier(), ids),
         inquiries: new InquiryService(memoryRepo(), memoryRepo(), users, housing, billing, notifier, ids, clock),
         advertisers: new AdvertiserService(advertisers, notifier, ids, clock),

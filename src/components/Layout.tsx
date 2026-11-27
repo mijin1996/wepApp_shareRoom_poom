@@ -50,14 +50,15 @@ export function Layout()
         setReportOpen(true);
     };
 
-    // 위 메뉴(넓은 화면): 홈 · 방 찾기 · 내 집 · 이용 안내 · 공지 · 집 빌려주실 분 · 커뮤니티(맨 끝)
+    // 위 메뉴(넓은 화면): 홈 · 방 찾기 · 내 집 · 혜택 · 공지 · 광고 올리기 · 문의 · 커뮤니티(맨 끝). 이용 안내는 홈 · 바닥글
     const menu = [
         { to: '/', label: t('nav.home'), end: true },
         { to: '/rooms', label: t('nav.rooms'), end: false },
         { to: '/my', label: t('nav.my'), end: false },
-        { to: '/guide', label: t('nav.guide'), end: false },
+        { to: '/perks', label: t('nav.perks'), end: false },
         { to: '/notices', label: t('nav.notices'), end: false },
-        { to: '/partner', label: t('nav.partner'), end: false },
+        { to: '/advertise', label: t('nav.advertise'), end: false },
+        { to: '/contact', label: t('nav.contact'), end: false },
         { to: '/community', label: t('nav.community'), end: false },
     ];
     // 아래 탭(휴대폰): 5칸 — 홈 · 방 찾기 · 내 집 · 공지 · 커뮤니티(맨 끝). 이용 안내는 홈 · 바닥글에서
@@ -110,7 +111,9 @@ export function Layout()
                     <Link to={path('/guide')}>{t('nav.guide')}</Link>
                     <Link to={path('/notices')}>{t('nav.notices')}</Link>
                     <Link to={path('/community')}>{t('nav.community')}</Link>
-                    <Link to={path('/partner')}>{t('nav.partner')}</Link>
+                    <Link to={path('/perks')}>{t('nav.perks')}</Link>
+                    <Link to={path('/advertise')}>{t('nav.advertise')}</Link>
+                    <Link to={path('/contact')}>{t('nav.contact')}</Link>
                     <Link to={path('/admin')}>{t('nav.admin')}</Link>
                 </p>
                 <p className="muted footer__biz">상호 · 대표자 · 사업자등록번호 · 통신판매업 신고번호 — 사업자 등록 후 표시 (D13-LEGAL)</p>

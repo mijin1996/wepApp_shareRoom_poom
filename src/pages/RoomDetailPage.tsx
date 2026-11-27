@@ -135,9 +135,10 @@ export function RoomDetailPage()
                     <span className={'tag tag--' + room.houseType}>{t(room.houseType === 'mom' ? 'card.mom' : 'card.dad')}</span>
                     <span className="tag tag--muted">{t('card.from', { date: shortDate(room.availableFrom, lang) })}</span>
                     {room.fit === 'fits' && <span className="tag tag--fit">✓ {t('card.fitOk')}</span>}
+                    {room.featured && <span className="tag tag--featured">⭐ {t('ad.featured')}</span>}
                 </div>
                 <h1>{name} · {t('card.bedrooms', { n: room.bedrooms })}</h1>
-                <p className="muted">{lang === 'en' ? `${room.dongEn}, ${room.guEn}` : `${room.guKo} ${room.dongKo}`}</p>
+                <p className="muted">{lang === 'en' ? [room.dongEn, room.guEn].filter(Boolean).join(', ') : [room.guKo, room.dongKo].filter(Boolean).join(' ')}</p>
                 <div className="btn-row btn-row--start">
                     {user && (
                         <button type="button" className={'btn btn--outline btn--small' + (fav ? ' is-on' : '')} aria-pressed={fav} onClick={() => void toggleFavorite(room.roomId)}>
@@ -156,6 +157,18 @@ export function RoomDetailPage()
             </div>
 
             <div className="detail-grid">
+                <section className="card detail-card detail-card--advertiser">
+                    <h2>{t('detail.advertiser')}</h2>
+                    <p>
+                        <span className={'tag ' + (room.listedBy === 'agent' ? 'tag--agent' : 'tag--owner')}>{t(room.listedBy === 'agent' ? 'ad.byAgent' : 'ad.byOwner')}</span>{' '}
+                        <strong>{lang === 'en' ? room.advertiserNameEn : room.advertiserNameKo}</strong>
+                        {room.example && <span className="tag tag--muted"> {t('community.example')}</span>}
+                    </p>
+                    {room.agentRegNo && <p className="muted">{t('detail.agentRegNo')} {room.agentRegNo}</p>}
+                    {(lang === 'en' ? room.noteEn : room.noteKo) && <p className="detail-note">{lang === 'en' ? room.noteEn : room.noteKo}</p>}
+                    <p className="notice">📣 {t('detail.adNotice')}</p>
+                </section>
+
                 <section className="card detail-card">
                     <h2>{t('detail.cost')}</h2>
                     <dl className="kv">
@@ -163,7 +176,7 @@ export function RoomDetailPage()
                         <dt>{t('detail.rent')}</dt><dd>{won(room.rent, lang)}</dd>
                         <dt>{t('detail.fee')}</dt><dd>{won(room.fee, lang)}<small className="muted">{t('detail.feeIncludes')}</small></dd>
                         <dt className="kv__total">{t('detail.first')}</dt><dd className="kv__total">{won(room.firstPayment, lang)}</dd>
-                        <dt>{t('detail.cleaning')}</dt><dd>{won(room.moveOutCleaningFee, lang)}</dd>
+                        {room.moveOutCleaningFee > 0 && <><dt>{t('detail.cleaning')}</dt><dd>{won(room.moveOutCleaningFee, lang)}</dd></>}
                         <dt>{t('detail.period')}</dt><dd>{t('detail.periodValue', { min: room.minMonths, max: room.maxMonths })}</dd>
                     </dl>
                 </section>
@@ -186,6 +199,7 @@ export function RoomDetailPage()
 
                 <section className="card detail-card">
                     <h2>{t('detail.near')}</h2>
+                    {room.pois.length === 0 && <p className="muted">{t('detail.noPoi')}</p>}
                     <ul className="poi-list">
                         {room.pois.map((p) => (
                             <li key={p.nameKo}>
@@ -198,10 +212,12 @@ export function RoomDetailPage()
                     <p className="muted">🔒 {t('detail.locationNote')}</p>
                 </section>
 
-                <section className="card detail-card">
-                    <h2>{t('detail.rules')}</h2>
-                    <ul className="rules">{rules.map((r) => <li key={r}>{r}</li>)}</ul>
-                </section>
+                {rules.length > 0 && (
+                    <section className="card detail-card">
+                        <h2>{t('detail.rules')}</h2>
+                        <ul className="rules">{rules.map((r) => <li key={r}>{r}</li>)}</ul>
+                    </section>
+                )}
             </div>
 
             <div className="cta-bar">{cta}</div>

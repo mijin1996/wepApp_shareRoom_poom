@@ -1,5 +1,6 @@
 // 화면 쪽 DTO: 서버 응답 JSON 모양 (서버 Model 이 바뀌어도 화면은 이 모양만 안다)
 export type HouseType = 'mom' | 'dad';
+export type AdvertiserKind = 'agent' | 'owner';
 export type Gender = 'f' | 'm';
 export type AgeBand = '0-5' | '6-7' | '8-12' | '13-18' | '19-24';
 export const AGE_BANDS: readonly AgeBand[] = ['0-5', '6-7', '8-12', '13-18', '19-24'];
@@ -58,6 +59,14 @@ export interface RoomView
     readonly rulesEn: readonly string[];
     readonly pois: readonly PoiView[];
     readonly placeWalkMin?: number;
+    readonly listedBy: AdvertiserKind;
+    readonly advertiserNameKo: string;
+    readonly advertiserNameEn: string;
+    readonly agentRegNo: string;
+    readonly noteKo: string;
+    readonly noteEn: string;
+    readonly featured: boolean;
+    readonly example: boolean;
 }
 
 export interface MapCluster
@@ -92,16 +101,21 @@ export interface UserView
 
 export type DocType = 'resident_reg' | 'single_parent' | 'alien_reg';
 
-export interface ApplicationView
+export type InquiryStatus = 'sent' | 'contacted' | 'viewing' | 'contracted' | 'closed';
+export const INQUIRY_STEPS: readonly InquiryStatus[] = ['sent', 'contacted', 'viewing', 'contracted'];
+
+export interface InquiryView
 {
     readonly id: string;
-    readonly userId: string;
     readonly roomId: string;
+    readonly houseId: string;
+    readonly advertiserId: string;
     readonly moveInDate: string;
     readonly months: number;
     readonly children: readonly ChildDraft[];
-    readonly status: 'received' | 'approved' | 'on_hold' | 'rejected';
-    readonly document?: { readonly docType: DocType; readonly checked: boolean };
+    readonly status: InquiryStatus;
+    readonly docShared: boolean;
+    readonly history: readonly { readonly status: InquiryStatus; readonly at: string; readonly by: 'tenant' | 'advertiser' }[];
     readonly createdAt: string;
     readonly consultLang: 'ko' | 'en';
     readonly situation: string;
@@ -109,29 +123,158 @@ export interface ApplicationView
     readonly contactTime: string;
 }
 
-export interface ContractView
+export interface DocumentView
 {
     readonly id: string;
-    readonly applicationId: string;
-    readonly roomId: string;
-    readonly startDate: string;
-    readonly months: number;
-    readonly deposit: number;
-    readonly rent: number;
-    readonly fee: number;
-    readonly paid: boolean;
+    readonly docType: DocType;
+    readonly uploadedAt: string;
+    readonly checked: boolean;
 }
 
-export interface MoveInView
+export interface ReceivedInquiryView
 {
-    readonly houseNameKo: string;
-    readonly houseNameEn: string;
-    readonly address: string;
-    readonly entryInfoKo: string;
-    readonly entryInfoEn: string;
-    readonly moveInDate: string;
-    readonly rulesKo: readonly string[];
-    readonly rulesEn: readonly string[];
+    readonly inquiry: InquiryView;
+    readonly tenantName: string;
+    readonly tenantPhone: string;
+    readonly document?: DocumentView;
+}
+
+export interface InquiryStatsView
+{
+    readonly total: number;
+    readonly byStatus: Readonly<Record<InquiryStatus, number>>;
+    readonly byGu: readonly { gu: string; count: number }[];
+    readonly urgentNow: number;
+    readonly docsChecked: number;
+}
+
+// ---------- 광고 ----------
+export type ProductId = 'AD_OWNER_30D' | 'AD_AGENT_MONTH' | 'AD_TOP_7D' | 'AD_LEAD';
+
+export interface AdProductView
+{
+    readonly id: ProductId;
+    readonly forKind: AdvertiserKind | 'both';
+    readonly price: number;
+    readonly days: number;
+    readonly nameKo: string;
+    readonly nameEn: string;
+    readonly descKo: string;
+    readonly descEn: string;
+}
+
+export interface AdvertiserView
+{
+    readonly id: string;
+    readonly kind: AdvertiserKind;
+    readonly nameKo: string;
+    readonly nameEn: string;
+    readonly agentRegNo: string;
+    readonly ownershipDoc: boolean;
+    readonly status: 'pending' | 'verified' | 'rejected';
+    readonly subscriptionUntil: string;
+    readonly createdAt: string;
+}
+
+export interface ListingDraftView
+{
+    houseType: HouseType;
+    placeId: string;
+    titleKo: string;
+    titleEn: string;
+    buildingType: 'house' | 'apartment' | 'villa' | 'other';
+    bedrooms: number;
+    privateM2: number;
+    sharedM2: number;
+    households: number;
+    privateBath: boolean;
+    deposit: number;
+    rent: number;
+    fee: number;
+    availableFrom: string;
+    minMonths: number;
+    elevator: boolean;
+    noStairs: boolean;
+    parking: boolean;
+    foreignerOk: boolean;
+    descriptionKo: string;
+    descriptionEn: string;
+}
+
+export interface ListingView
+{
+    readonly id: string;
+    readonly advertiserId: string;
+    readonly draft: ListingDraftView;
+    readonly status: 'review' | 'approved' | 'live' | 'rejected' | 'ended';
+    readonly houseId: string;
+    readonly roomId: string;
+    readonly liveUntil: string;
+    readonly topUntil: string;
+    readonly rejectReason: string;
+    readonly createdAt: string;
+}
+
+export interface ChargeView
+{
+    readonly id: string;
+    readonly productId: ProductId;
+    readonly amount: number;
+    readonly listingId: string;
+    readonly paid: boolean;
+    readonly createdAt: string;
+}
+
+export interface StatementView
+{
+    readonly charges: readonly ChargeView[];
+    readonly unpaidTotal: number;
+    readonly paidTotal: number;
+}
+
+export interface RevenueView
+{
+    readonly productId: ProductId;
+    readonly count: number;
+    readonly paid: number;
+    readonly unpaid: number;
+}
+
+// ---------- 혜택 · 문의 메뉴 ----------
+export type PerkKind = 'partner' | 'sponsor' | 'institution';
+
+export interface PerkView
+{
+    readonly id: string;
+    readonly kind: PerkKind;
+    readonly action: 'link' | 'request';
+    readonly url: string;
+    readonly providerKo: string;
+    readonly providerEn: string;
+    readonly titleKo: string;
+    readonly titleEn: string;
+    readonly descKo: string;
+    readonly descEn: string;
+    readonly active: boolean;
+    readonly example: boolean;
+    readonly clicks: number;
+    readonly createdAt: string;
+}
+
+export type PerkDraft = Pick<PerkView, 'kind' | 'action' | 'url' | 'providerKo' | 'providerEn' | 'titleKo' | 'titleEn' | 'descKo' | 'descEn' | 'active'>;
+
+export type ProposalKind = 'ad' | 'partner' | 'sponsor' | 'institution' | 'etc';
+
+export interface ProposalView
+{
+    readonly id: string;
+    readonly kind: ProposalKind;
+    readonly org: string;
+    readonly name: string;
+    readonly contact: string;
+    readonly message: string;
+    readonly status: 'new' | 'in_progress' | 'done';
+    readonly createdAt: string;
 }
 
 export interface TrailEntry
@@ -178,17 +321,6 @@ export interface DemandView
     readonly householdSize: number;
     readonly priceBand: string;
     readonly count: number;
-}
-
-export interface PartnerView
-{
-    readonly id: string;
-    readonly kind: string;
-    readonly gu: string;
-    readonly rooms: number;
-    readonly contact: string;
-    readonly message: string;
-    readonly createdAt: string;
 }
 
 // ---------- 커뮤니티 ----------

@@ -2390,3 +2390,197 @@ a
     overflow-wrap: anywhere;
     word-break: keep-all;
 }
+
+/* ---------- 광고 플랫폼: 광고한 분 · 추천 · 문의 진행 ---------- */
+.tag--featured
+{
+    background: #FFF1C9;
+    color: #7A5300;
+}
+
+.tag--agent
+{
+    background: #E2EEF8;
+    color: var(--c-dad);
+}
+
+.tag--owner
+{
+    background: var(--c-ok-soft);
+    color: var(--c-ok);
+}
+
+.tag--listing-live
+{
+    background: var(--c-ok-soft);
+    color: var(--c-ok);
+}
+
+.tag--listing-review,
+.tag--listing-approved
+{
+    background: #FFF1C9;
+    color: #7A5300;
+}
+
+.tag--listing-rejected,
+.tag--listing-ended
+{
+    background: var(--c-soft);
+    color: var(--c-muted);
+}
+
+.tag--perk-partner
+{
+    background: var(--c-primary-soft);
+    color: var(--c-primary-dark);
+}
+
+.tag--perk-sponsor
+{
+    background: #F9E3EA;
+    color: var(--c-mom);
+}
+
+.tag--perk-institution
+{
+    background: #E2EEF8;
+    color: var(--c-dad);
+}
+
+.room-card__by
+{
+    font-size: 0.85rem;
+    overflow-wrap: anywhere;
+}
+
+.detail-note
+{
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.inquiry-list
+{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.inquiry
+{
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px;
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    min-width: 0;
+}
+
+.inquiry__head
+{
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.ad-rules
+{
+    margin: 0;
+    padding-inline-start: 1.2em;
+    color: var(--c-muted);
+    overflow-wrap: anywhere;
+}
+
+.ad-products
+{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: 12px;
+}
+
+.ad-product
+{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.ad-product__name,
+.perk__title
+{
+    margin: 0;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.ad-plan
+{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.ad-plan > p
+{
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.ad-tabs
+{
+    margin-block: 8px;
+}
+
+.form-grid
+{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+    gap: 12px;
+}
+
+.toggle--agree
+{
+    align-items: flex-start;
+    font-weight: 600;
+}
+
+.perk
+{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
+}
+
+.perk > p
+{
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.perk .form
+{
+    align-self: stretch;
+}
+
+.perk-cta
+{
+    overflow-wrap: anywhere;
+}
+
+.input--inline
+{
+    flex: 1 1 140px;
+    min-width: 0;
+    width: auto;
+}

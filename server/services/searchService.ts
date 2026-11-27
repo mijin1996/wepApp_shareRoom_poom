@@ -5,7 +5,9 @@ import type { PlaceKind } from '../models/housing';
 import type { DemandStat } from '../models/feedback';
 import type { IHousingRepository } from '../repositories/housingRepository';
 import type { IRecordRepository } from '../repositories/recordRepository';
+import { dayOf, isOpen } from '../rules/dates';
 import { matchesQuery } from '../rules/hangul';
+import type { IClock } from '../adapters/adapters';
 
 const MAX_PER_GROUP = 5;
 const MAX_QUERY_LENGTH = 40;
@@ -45,11 +47,26 @@ export class SearchService
 {
     private readonly _housing: IHousingRepository;
     private readonly _demand: IRecordRepository<DemandStat>;
+    private readonly _clock: IClock;
 
-    public constructor(housing: IHousingRepository, demand: IRecordRepository<DemandStat>)
+    public constructor(housing: IHousingRepository, demand: IRecordRepository<DemandStat>, clock: IClock)
     {
         this._housing = housing;
         this._demand = demand;
+        this._clock = clock;
+    }
+
+    // 광고 올릴 때 고르는 지역: 구 · 동만
+    public async areasAsync(): Promise<Result<Suggestion[]>>
+    {
+        const places = await this._housing.getPlacesAsync();
+        if (!places.ok)
+        {
+            return places;
+        }
+        return success(places.data
+            .filter((p) => p.kind === 'gu' || p.kind === 'dong')
+            .map((p) => ({ id: p.id, kind: p.kind, nameKo: p.nameKo, nameEn: p.nameEn, guKo: p.gu })));
     }
 
     public async suggestAsync(query: string): Promise<Result<Suggestion[]>>
@@ -72,7 +89,10 @@ export class SearchService
         const placeHits: Suggestion[] = places.data
             .filter((p) => matchesQuery(p.nameKo, q) || matchesQuery(p.nameEn, q))
             .map((p) => ({ id: p.id, kind: p.kind, nameKo: p.nameKo, nameEn: p.nameEn, guKo: p.gu }));
+        // 광고 기간이 끝난 집은 추천에서도 뺀다
+        const today = dayOf(this._clock.now());
         const houseHits: Suggestion[] = houses.data
+            .filter((h) => isOpen(h.listing.liveUntil, today))
             .filter((h) => matchesQuery(h.nameKo, q) || matchesQuery(h.nameEn, q))
             .map((h) => ({ id: 'house:' + h.id, kind: 'house' as const, nameKo: h.nameKo, nameEn: h.nameEn, guKo: h.gu }));
 

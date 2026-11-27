@@ -31,9 +31,11 @@ export function RoomCard({ room }: { room: RoomView })
                             </span>
                         )}
                         {room.fit === 'fits' && <span className="tag tag--fit">✓ {t('card.fitOk')}</span>}
+                        {room.featured && <span className="tag tag--featured">⭐ {t('ad.featured')}</span>}
                     </div>
                     <h3 className="room-card__title">{lang === 'en' ? room.houseNameEn : room.houseNameKo}</h3>
-                    <p className="room-card__where">{lang === 'en' ? `${room.dongEn}, ${room.guEn}` : `${room.guKo} ${room.dongKo}`}</p>
+                    <p className="room-card__where">{lang === 'en' ? [room.dongEn, room.guEn].filter(Boolean).join(', ') : [room.guKo, room.dongKo].filter(Boolean).join(' ')}</p>
+                    <p className="room-card__by muted">{t(room.listedBy === 'agent' ? 'ad.byAgent' : 'ad.byOwner')} · {lang === 'en' ? room.advertiserNameEn : room.advertiserNameKo}</p>
                     <p className="room-card__price">
                         <strong>{t('card.monthly', { amount: won(room.monthly, lang) })}</strong>
                         <span className="muted">{t('card.deposit', { amount: won(room.deposit, lang) })}</span>

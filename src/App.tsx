@@ -7,7 +7,9 @@ import { AdminPage } from './pages/AdminPage';
 import { ApplyDonePage, ApplyPage } from './pages/ApplyPage';
 import { AuthPage } from './pages/AuthPage';
 import { HomePage } from './pages/HomePage';
-import { GuidePage, NotFoundPage, PartnerPage } from './pages/InfoPages';
+import { GuidePage, NotFoundPage } from './pages/InfoPages';
+import { AdvertisePage } from './pages/AdvertisePage';
+import { ContactPage, PerksPage } from './pages/BizPages';
 import { MyPage } from './pages/MyPage';
 import { RoomDetailPage } from './pages/RoomDetailPage';
 import { RoomsPage } from './pages/RoomsPage';
@@ -37,7 +39,10 @@ function LangShell({ lang }: { lang: Lang })
                     <Route path="community/ask" element={<AskPage />} />
                     <Route path="community/:id" element={<QuestionPage />} />
                     <Route path="guide" element={<GuidePage />} />
-                    <Route path="partner" element={<PartnerPage />} />
+                    <Route path="perks" element={<PerksPage />} />
+                    <Route path="advertise" element={<AdvertisePage />} />
+                    <Route path="contact" element={<ContactPage />} />
+                    <Route path="partner" element={<AdvertisePage />} />
                     <Route path="admin" element={<AdminPage />} />
                     <Route path="*" element={<NotFoundPage />} />
                 </Route>
