@@ -19,12 +19,15 @@ export enum AppError
     HouseTypeMismatch = 'HouseTypeMismatch',
     ApplicationInProgress = 'ApplicationInProgress',
 
-    // 계약 · 결제 규칙
-    NotApproved = 'NotApproved',
+    // 문의 · 서류 규칙
     DocumentRequired = 'DocumentRequired',
-    NotPaid = 'NotPaid',
-    PaymentFailed = 'PaymentFailed',
+    TooManyInquiries = 'TooManyInquiries',
     AlreadyDone = 'AlreadyDone',
+
+    // 광고 · 결제 규칙
+    AdvertiserNotVerified = 'AdvertiserNotVerified',
+    SubscriptionRequired = 'SubscriptionRequired',
+    PaymentFailed = 'PaymentFailed',
 
     // 신고 규칙
     TooManyReports = 'TooManyReports',

@@ -28,55 +28,47 @@ export interface User
 export type Urgency = 'now' | 'week' | 'month';
 export const URGENCIES: readonly Urgency[] = ['now', 'week', 'month'];
 
-export type ApplicationStatus = 'received' | 'approved' | 'on_hold' | 'rejected';
+// 문의 진행: 보냄 → 연락 옴 → 집 보기 → 계약함(광고주와 직접) / 닫힘 (POL_INQUIRY_03)
+export type InquiryStatus = 'sent' | 'contacted' | 'viewing' | 'contracted' | 'closed';
+export const INQUIRY_STATUSES: readonly InquiryStatus[] = ['sent', 'contacted', 'viewing', 'contracted', 'closed'];
 export type DocType = 'resident_reg' | 'single_parent' | 'alien_reg';
+export const DOC_TYPES: readonly DocType[] = ['resident_reg', 'single_parent', 'alien_reg'];
 
-export interface DocumentInfo
+// 서류함: 한 번 올리면 문의마다 골라서 보냄 (POL_DOCBOX)
+export interface DocumentBox
 {
+    readonly id: string;                   // = userId (사람당 하나)
     readonly docType: DocType;
     readonly uploadedAt: string;
-    readonly checked: boolean;
+    readonly checked: boolean;             // 운영 매니저가 확인 → "한부모 확인됨" 배지
 }
 
-export interface Application
+export interface StatusStep
+{
+    readonly status: InquiryStatus;
+    readonly at: string;
+    readonly by: 'tenant' | 'advertiser';
+}
+
+// 문의: 한부모 가족 → 광고주. 품은 전달 · 기록만 하고 계약에 끼지 않음
+export interface Inquiry
 {
     readonly id: string;
     readonly userId: string;
     readonly roomId: string;
+    readonly houseId: string;
+    readonly advertiserId: string;
     readonly moveInDate: string;
     readonly months: number;
     readonly children: readonly Child[];
     readonly contactTime: string;
     readonly consultLang: Lang;
-    readonly situation: string;            // 내 상황 (운영 매니저만 봄, POL_APPLY_SITUATION)
-    readonly urgency: Urgency | undefined; // 언제까지 집이 필요한지
-    readonly status: ApplicationStatus;
-    readonly document: DocumentInfo | undefined;
+    readonly situation: string;            // 내 상황 (광고주에게 전달, 동의 받음)
+    readonly urgency: Urgency | undefined;
+    readonly status: InquiryStatus;
+    readonly docShared: boolean;           // 서류함 서류를 이 광고주에게 보냈는지
+    readonly history: readonly StatusStep[];
     readonly createdAt: string;
 }
 
-export interface Contract
-{
-    readonly id: string;
-    readonly applicationId: string;
-    readonly userId: string;
-    readonly roomId: string;
-    readonly startDate: string;
-    readonly months: number;
-    readonly deposit: number;
-    readonly rent: number;
-    readonly fee: number;
-    readonly signedAt: string;
-    readonly paid: boolean;
-}
-
 export type PayMethod = 'card' | 'transfer' | 'easy';
-
-export interface Payment
-{
-    readonly id: string;
-    readonly contractId: string;
-    readonly amount: number;
-    readonly method: PayMethod;
-    readonly paidAt: string;
-}

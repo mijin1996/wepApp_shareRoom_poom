@@ -1,6 +1,6 @@
 // Mapper: DTO → Model. 빈 값 · 이상한 값은 안전한 기본값으로 (개념편 5.2 방어적 변환)
-import type { BuildingType, House, HouseType, LatLng, Place, PlaceKind, Poi, PoiKind, Room, RoomProduct, RoomStatus } from '../models/housing';
-import type { HouseDto, PlaceDto, PoiDto, RoomDto } from '../dtos/seedDto';
+import type { AdvertiserKind, BuildingType, House, HouseType, LatLng, ListingInfo, Place, PlaceKind, Poi, PoiKind, Room, RoomProduct, RoomStatus } from '../models/housing';
+import type { HouseDto, ListingDto, PlaceDto, PoiDto, RoomDto } from '../dtos/seedDto';
 
 const SEOUL_CITY_HALL: LatLng = [37.5665, 126.978];
 const DEFAULT_MAX_MONTHS = 24;
@@ -46,6 +46,28 @@ export function toPoiModel(dto: PoiDto): Poi
     };
 }
 
+function toOptionalDate(value: string | undefined): string
+{
+    return value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : '';
+}
+
+export function toListingModel(dto: ListingDto | undefined): ListingInfo
+{
+    const listedBy = pick<AdvertiserKind>(dto?.listed_by, ['agent', 'owner'], 'owner');
+    return {
+        advertiserId: dto?.advertiser_id ?? '',
+        listedBy,
+        advertiserNameKo: dto?.advertiser_name_ko ?? '',
+        advertiserNameEn: dto?.advertiser_name_en ?? dto?.advertiser_name_ko ?? '',
+        agentRegNo: listedBy === 'agent' ? dto?.agent_reg_no ?? '' : '',
+        liveUntil: toOptionalDate(dto?.live_until),
+        topUntil: toOptionalDate(dto?.top_until),
+        noteKo: dto?.note_ko ?? '',
+        noteEn: dto?.note_en ?? dto?.note_ko ?? '',
+        example: dto?.example ?? false,
+    };
+}
+
 export function toHouseModel(dto: HouseDto): House
 {
     const dongCenter = toLatLng(dto.dong_center, SEOUL_CITY_HALL);
@@ -60,9 +82,6 @@ export function toHouseModel(dto: HouseDto): House
         dongEn: dto.dong_en ?? dto.dong ?? '',
         dongCenter,
         location: toLatLng(dto.location, dongCenter),
-        address: dto.address ?? '',
-        entryInfoKo: dto.entry_info_ko ?? '',
-        entryInfoEn: dto.entry_info_en ?? dto.entry_info_ko ?? '',
         buildingType: pick(dto.building_type, BUILDING_TYPES, 'other'),
         elevator: dto.elevator ?? false,
         noStairs: dto.no_stairs ?? false,
@@ -78,6 +97,7 @@ export function toHouseModel(dto: HouseDto): House
         rulesKo: dto.rules_ko ?? [],
         rulesEn: dto.rules_en ?? dto.rules_ko ?? [],
         pois: (dto.pois ?? []).map(toPoiModel),
+        listing: toListingModel(dto.listing),
     };
 }
 

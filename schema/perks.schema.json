@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Poom perks (partner · sponsor · institution) examples",
+  "type": "object",
+  "required": ["perks"],
+  "properties": {
+    "perks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "action", "provider_ko", "title_ko", "desc_ko"],
+        "properties": {
+          "id": { "type": "string" },
+          "kind": { "enum": ["partner", "sponsor", "institution"] },
+          "action": { "enum": ["link", "request"] },
+          "url": { "type": "string", "pattern": "^https://" },
+          "provider_ko": { "type": "string", "minLength": 1 },
+          "provider_en": { "type": "string" },
+          "title_ko": { "type": "string", "minLength": 2, "maxLength": 60 },
+          "title_en": { "type": "string", "maxLength": 60 },
+          "desc_ko": { "type": "string", "maxLength": 1000 },
+          "desc_en": { "type": "string", "maxLength": 1000 }
+        }
+      }
+    }
+  }
+}

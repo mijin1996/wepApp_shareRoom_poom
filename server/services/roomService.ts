@@ -1,7 +1,8 @@
-// RoomService: 방 찾기 규칙 (가족 맞춤 · 필터 · 위치 보호) — REQ_001 · 024 · 032 · 033
+// RoomService: 방 찾기 규칙 (가족 맞춤 · 필터 · 위치 보호 · 광고 기간 · 상단 노출) — REQ_001 · 024 · 032 · 033, POL_AD_06 · 09
 import { AppError } from '../core/appError';
 import { failure, success, type Result } from '../core/result';
-import type { BuildingType, House, HouseType, LatLng, PoiKind, Room, RoomProduct, RoomStatus } from '../models/housing';
+import type { AdvertiserKind, BuildingType, House, HouseType, LatLng, PoiKind, Room, RoomProduct, RoomStatus } from '../models/housing';
+import { dayOf, isOpen } from '../rules/dates';
 import type { Child } from '../models/people';
 import type { IHousingRepository } from '../repositories/housingRepository';
 import { checkFit, householdArea, maxHouseholdForArea, type FitResult } from '../rules/housingStandard';
@@ -82,6 +83,15 @@ export interface RoomView
     readonly rulesEn: readonly string[];
     readonly pois: readonly PoiView[];
     readonly placeWalkMin: number | undefined;
+    // 광고 정보: 누가 올렸는지 (계약은 이 사람과 직접)
+    readonly listedBy: AdvertiserKind;
+    readonly advertiserNameKo: string;
+    readonly advertiserNameEn: string;
+    readonly agentRegNo: string;
+    readonly noteKo: string;
+    readonly noteEn: string;
+    readonly featured: boolean;           // 상단 노출 중
+    readonly example: boolean;
 }
 
 export interface MapCluster
@@ -103,6 +113,17 @@ export class RoomService
     {
         this._housing = housing;
         this._clock = clock;
+    }
+
+    private today(): string
+    {
+        return dayOf(this._clock.now());
+    }
+
+    // 광고 기간이 끝난 집은 방 찾기 · 상세에서 안 보임
+    private isLive(house: House): boolean
+    {
+        return isOpen(house.listing.liveUntil, this.today());
     }
 
     private isSoon(availableFrom: string): boolean
@@ -154,6 +175,14 @@ export class RoomService
                 .map((p) => ({ kind: p.kind, nameKo: p.nameKo, nameEn: p.nameEn, walkMin: walkMinutesRounded(house.location, p.location) }))
                 .sort((a, b) => a.walkMin - b.walkMin),
             placeWalkMin: placeLocation ? walkMinutesRounded(house.location, placeLocation) : undefined,
+            listedBy: house.listing.listedBy,
+            advertiserNameKo: house.listing.advertiserNameKo,
+            advertiserNameEn: house.listing.advertiserNameEn,
+            agentRegNo: house.listing.agentRegNo,
+            noteKo: house.listing.noteKo,
+            noteEn: house.listing.noteEn,
+            featured: house.listing.topUntil !== '' && house.listing.topUntil >= this.today(),
+            example: house.listing.example,
         };
     }
 
@@ -217,7 +246,7 @@ export class RoomService
         const views = loaded.data.rooms
             .filter((room) => room.status !== 'occupied')
             .map((room) => ({ room, house: loaded.data.houses.get(room.houseId) }))
-            .filter((x): x is { room: Room; house: House } => x.house !== undefined)
+            .filter((x): x is { room: Room; house: House } => x.house !== undefined && this.isLive(x.house))
             .filter(({ house }) => !placeMatch || placeMatch(house))
             .filter(({ house }) => !query.houseType || house.type === query.houseType)
             .filter(({ room }) => query.maxDeposit === undefined || room.deposit <= query.maxDeposit)
@@ -234,7 +263,9 @@ export class RoomService
             .filter((view) => !query.nearPoi || view.pois.some((p) => p.kind === query.nearPoi && p.walkMin <= 10))
             .filter((view) => view.fit !== 'too_small' && view.fit !== 'household_too_large');
 
-        return success(this.sort(views, query.sort ?? 'soon'));
+        // 상단 노출 광고가 먼저, 그 안에서는 고른 정렬 그대로 (POL_AD_09)
+        const sorted = this.sort(views, query.sort ?? 'soon');
+        return success([...sorted.filter((v) => v.featured), ...sorted.filter((v) => !v.featured)]);
     }
 
     private sort(views: RoomView[], sort: RoomSort): RoomView[]
@@ -259,7 +290,11 @@ export class RoomService
             return room;
         }
         const house = await this._housing.getHouseAsync(room.data.houseId);
-        return house.ok ? success(this.toView(room.data, house.data, children)) : house;
+        if (!house.ok)
+        {
+            return house;
+        }
+        return this.isLive(house.data) ? success(this.toView(room.data, house.data, children)) : failure(AppError.NotFound);
     }
 
     // 지도: 동 단위로만 묶는다 (POL_SEARCH_01)

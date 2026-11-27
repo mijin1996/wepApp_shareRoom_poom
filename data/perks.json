@@ -1,0 +1,8 @@
+{
+  "perks": [
+    { "id": "perk-ex-1", "kind": "partner", "action": "request", "provider_ko": "예시 이사 업체", "provider_en": "Sample Movers", "title_ko": "이사 10% 할인", "title_en": "10% off moving", "desc_ko": "품에서 신청하면 이사 비용을 10% 깎아 드려요. 신청을 남기면 업체가 먼저 연락해요.", "desc_en": "Get 10% off moving when you apply through Poom. The company will contact you." },
+    { "id": "perk-ex-2", "kind": "partner", "action": "request", "provider_ko": "예시 청소 업체", "provider_en": "Sample Cleaning", "title_ko": "입주 청소 할인", "title_en": "Move-in cleaning discount", "desc_ko": "입주 전 청소를 한부모 가족 할인 가격으로 받아요.", "desc_en": "Move-in cleaning at a single-parent family discount." },
+    { "id": "perk-ex-3", "kind": "sponsor", "action": "request", "provider_ko": "예시 후원 기업", "provider_en": "Sample Sponsor", "title_ko": "첫 달 방값 지원", "title_en": "First month's rent support", "desc_ko": "후원 기업이 첫 달 방값 일부를 지원해요. 신청을 남기면 운영 매니저가 대상 여부를 알려 드려요.", "desc_en": "A sponsor covers part of your first month's rent. Apply and a manager will let you know if you qualify." },
+    { "id": "perk-ex-4", "kind": "institution", "action": "request", "provider_ko": "예시 구청 한부모 지원", "provider_en": "Sample District Support", "title_ko": "한부모 주거 상담 연결", "title_en": "Single-parent housing counseling", "desc_ko": "구청 · 지원센터 주거 상담 선생님과 연결해 드려요.", "desc_en": "We connect you with a district housing counselor." }
+  ]
+}

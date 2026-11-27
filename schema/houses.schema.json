@@ -8,7 +8,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "name_ko", "name_en", "type", "gu", "dong", "dong_center", "location", "shared_m2", "households", "rooms"],
+        "required": ["id", "name_ko", "name_en", "type", "gu", "dong", "dong_center", "location", "shared_m2", "households", "rooms", "listing"],
         "properties": {
           "id": { "type": "string" },
           "type": { "enum": ["mom", "dad"] },
@@ -17,6 +17,20 @@
           "shared_m2": { "type": "number", "minimum": 0 },
           "households": { "type": "integer", "minimum": 1 },
           "move_out_cleaning_fee": { "type": "integer", "minimum": 0 },
+          "listing": {
+            "type": "object",
+            "required": ["advertiser_id", "listed_by", "advertiser_name_ko"],
+            "properties": {
+              "advertiser_id": { "type": "string" },
+              "listed_by": { "enum": ["agent", "owner"] },
+              "advertiser_name_ko": { "type": "string" },
+              "advertiser_name_en": { "type": "string" },
+              "agent_reg_no": { "type": "string" },
+              "live_until": { "type": "string", "pattern": "^(\\d{4}-\\d{2}-\\d{2})?$" },
+              "top_until": { "type": "string", "pattern": "^(\\d{4}-\\d{2}-\\d{2})?$" },
+              "example": { "type": "boolean" }
+            }
+          },
           "pois": {
             "type": "array",
             "items": {

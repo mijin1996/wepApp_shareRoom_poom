@@ -3,7 +3,11 @@ import { AppError } from '../core/appError';
 import type { Container } from '../container';
 import type { Lang } from '../models/housing';
 import type { ReportKind, ReportStatus, TrailEntry } from '../models/feedback';
-import type { DocType, Gender, IdType, PayMethod, Urgency, User } from '../models/people';
+import { INQUIRY_STATUSES, type DocType, type Gender, type IdType, type InquiryStatus, type PayMethod, type Urgency, type User } from '../models/people';
+import type { BuildingType, HouseType } from '../models/housing';
+import type { ListingDraft, ProductId } from '../models/advertising';
+import { PERK_KINDS, type PerkAction, type PerkKind, type ProposalKind, type ProposalStatus } from '../models/perk';
+import type { PerkInput } from '../services/perkService';
 import { TOPICS, type Topic } from '../models/community';
 import type { NoticeCategory } from '../models/notice';
 import type { NoticeInput } from '../services/noticeService';
@@ -71,6 +75,58 @@ function withAdmin(adminKey: string, handler: (ctx: RouteContext) => Promise<Res
     };
 }
 
+// 확인된 광고주만 (공인중개사 · 집주인)
+function withAdvertiser(c: Container, handler: (ctx: RouteContext, advertiser: import('../models/advertising').Advertiser) => Promise<Response>)
+{
+    return withUser(c, async (ctx, user) =>
+    {
+        const advertiser = await c.advertisers.verifiedOfAsync(user);
+        return advertiser.ok ? handler(ctx, advertiser.data) : errorResponse(advertiser.error);
+    });
+}
+
+function bool(value: unknown): boolean
+{
+    return value === true;
+}
+
+function num(value: unknown): number
+{
+    return typeof value === 'number' && Number.isFinite(value) ? value : -1;
+}
+
+function draftOf(b: Record<string, unknown>): ListingDraft
+{
+    return {
+        houseType: (b.houseType === 'dad' ? 'dad' : b.houseType === 'mom' ? 'mom' : '') as HouseType,
+        placeId: str(b.placeId),
+        titleKo: str(b.titleKo),
+        titleEn: str(b.titleEn),
+        buildingType: (['house', 'apartment', 'villa', 'other'].includes(str(b.buildingType)) ? str(b.buildingType) : 'other') as BuildingType,
+        bedrooms: num(b.bedrooms),
+        privateM2: num(b.privateM2),
+        sharedM2: num(b.sharedM2),
+        households: num(b.households),
+        privateBath: bool(b.privateBath),
+        deposit: num(b.deposit),
+        rent: num(b.rent),
+        fee: num(b.fee),
+        availableFrom: str(b.availableFrom),
+        minMonths: num(b.minMonths),
+        elevator: bool(b.elevator),
+        noStairs: bool(b.noStairs),
+        parking: bool(b.parking),
+        foreignerOk: bool(b.foreignerOk),
+        descriptionKo: str(b.descriptionKo),
+        descriptionEn: str(b.descriptionEn),
+    };
+}
+
+function statusOf(value: unknown): InquiryStatus
+{
+    return (INQUIRY_STATUSES.includes(value as InquiryStatus) ? value : '') as InquiryStatus;
+}
+
 export function buildRouter(c: Container, adminKey: string | undefined): Router
 {
     const key = adminKey ?? DEV_ADMIN_KEY;
@@ -88,12 +144,15 @@ export function buildRouter(c: Container, adminKey: string | undefined): Router
     r.add('GET', '/api/rooms', async (ctx) => fromResult(await c.rooms.searchAsync(parseRoomQuery(ctx.query))));
     r.add('GET', '/api/rooms/map', async (ctx) => fromResult(await c.rooms.clustersAsync(parseRoomQuery(ctx.query))));
     r.add('GET', '/api/rooms/:id', async (ctx) => fromResult(await c.rooms.getRoomAsync(ctx.params.id, parseChildren(ctx.query.get('children')))));
-    r.add('POST', '/api/partner', async (ctx) =>
+    r.add('GET', '/api/ad-products', async () => okResponse(c.billing.products()));
+    r.add('POST', '/api/proposals', async (ctx) =>
     {
         const b = await bodyOf(ctx);
-        const kind = b.kind === 'building' || b.kind === 'org' ? b.kind : 'owner';
-        return fromResult(await c.saved.partnerInquiryAsync({ kind, gu: str(b.gu), rooms: int(b.rooms), contact: str(b.contact), message: str(b.message).slice(0, 500) }), (p) => ({ id: p.id }), 201);
+        return fromResult(await c.proposals.submitAsync({ kind: str(b.kind) as ProposalKind, org: str(b.org), name: str(b.name), contact: str(b.contact), message: str(b.message) }), (pr) => ({ id: pr.id }), 201);
     });
+    const perkKindOf = (value: string | null): PerkKind | undefined => (PERK_KINDS.includes(value as PerkKind) ? (value as PerkKind) : undefined);
+    r.add('GET', '/api/perks', async (ctx) => fromResult(await c.perks.listAsync(perkKindOf(ctx.query.get('kind')))));
+    r.add('POST', '/api/perks/:id/open', async (ctx) => fromResult(await c.perks.openAsync(ctx.params.id), (url) => ({ url })));
 
     // ---------- 본인인증 ----------
     r.add('POST', '/api/auth/verify', async (ctx) =>
@@ -105,13 +164,12 @@ export function buildRouter(c: Container, adminKey: string | undefined): Router
     });
     r.add('GET', '/api/me', withUser(c, async (_ctx, user) => okResponse(user)));
 
-    // ---------- 신청 · 계약 · 결제 ----------
-    r.add('GET', '/api/me/applications', withUser(c, async (_ctx, user) => fromResult(await c.applications.listMineAsync(user))));
-    r.add('POST', '/api/applications', withUser(c, async (ctx, user) =>
+    // ---------- 문의 · 서류함 (품은 전달 · 기록만) ----------
+    r.add('GET', '/api/me/inquiries', withUser(c, async (_ctx, user) => fromResult(await c.inquiries.listMineAsync(user))));
+    r.add('POST', '/api/inquiries', withUser(c, async (ctx, user) =>
     {
         const b = await bodyOf(ctx);
-        const docType = typeof b.docType === 'string' ? (b.docType as DocType) : undefined;
-        return fromResult(await c.applications.applyAsync(user, {
+        return fromResult(await c.inquiries.sendAsync(user, {
             roomId: str(b.roomId),
             moveInDate: str(b.moveInDate),
             months: int(b.months),
@@ -120,26 +178,69 @@ export function buildRouter(c: Container, adminKey: string | undefined): Router
             consultLang: lang(b.consultLang),
             situation: str(b.situation),
             urgency: typeof b.urgency === 'string' ? (b.urgency as Urgency) : undefined,
-            docType,
+            agree: b.agree === true,
         }), undefined, 201);
     }));
-    r.add('POST', '/api/applications/:id/documents', withUser(c, async (ctx, user) =>
+    r.add('POST', '/api/inquiries/:id/share-document', withUser(c, async (ctx, user) => fromResult(await c.inquiries.shareDocumentAsync(user, ctx.params.id))));
+    r.add('POST', '/api/inquiries/:id/status', withUser(c, async (ctx, user) =>
     {
         const b = await bodyOf(ctx);
-        return fromResult(await c.applications.uploadDocumentAsync(user, ctx.params.id, str(b.docType) as DocType));
+        return fromResult(await c.inquiries.tenantUpdateAsync(user, ctx.params.id, statusOf(b.status)));
     }));
-    r.add('POST', '/api/applications/:id/sign', withUser(c, async (ctx, user) =>
+    r.add('GET', '/api/me/document', withUser(c, async (_ctx, user) => fromResult(await c.inquiries.myDocumentAsync(user), (doc) => ({ document: doc ?? null }))));
+    r.add('POST', '/api/me/document', withUser(c, async (ctx, user) =>
     {
         const b = await bodyOf(ctx);
-        return fromResult(await c.contracts.signAsync(user, ctx.params.id, str(b.signature)));
+        return fromResult(await c.inquiries.uploadDocumentAsync(user, str(b.docType) as DocType));
     }));
-    r.add('GET', '/api/me/contracts', withUser(c, async (_ctx, user) => fromResult(await c.contracts.listMineAsync(user))));
-    r.add('POST', '/api/contracts/:id/pay', withUser(c, async (ctx, user) =>
+    r.add('GET', '/api/me/perk-requests', withUser(c, async (_ctx, user) => fromResult(await c.perks.myRequestsAsync(user))));
+    r.add('POST', '/api/perks/:id/request', withUser(c, async (ctx, user) =>
     {
         const b = await bodyOf(ctx);
-        return fromResult(await c.contracts.payAsync(user, ctx.params.id, str(b.method) as PayMethod));
+        return fromResult(await c.perks.requestAsync(user, ctx.params.id, str(b.note)), (pr) => ({ id: pr.id }), 201);
     }));
-    r.add('GET', '/api/me/movein', withUser(c, async (_ctx, user) => fromResult(await c.contracts.moveInAsync(user))));
+
+    // ---------- 광고주 (공인중개사 · 집주인) ----------
+    r.add('GET', '/api/advertiser/me', withUser(c, async (_ctx, user) =>
+    {
+        const mine = await c.advertisers.mineAsync(user);
+        if (mine.ok)
+        {
+            return okResponse({ advertiser: mine.data });
+        }
+        return mine.error === AppError.NotFound ? okResponse({ advertiser: null }) : errorResponse(mine.error);
+    }));
+    r.add('POST', '/api/advertiser', withUser(c, async (ctx, user) =>
+    {
+        const b = await bodyOf(ctx);
+        return fromResult(await c.advertisers.registerAsync(user, {
+            kind: b.kind === 'agent' ? 'agent' : 'owner',
+            nameKo: str(b.nameKo),
+            nameEn: str(b.nameEn),
+            agentRegNo: str(b.agentRegNo),
+            ownershipDoc: b.ownershipDoc === true,
+        }), undefined, 201);
+    }));
+    r.add('GET', '/api/advertiser/listings', withAdvertiser(c, async (_ctx, a) => fromResult(await c.listings.mineAsync(a))));
+    r.add('POST', '/api/advertiser/listings', withAdvertiser(c, async (ctx, a) => fromResult(await c.listings.submitAsync(a, draftOf(await bodyOf(ctx))), undefined, 201)));
+    r.add('POST', '/api/advertiser/listings/:id/end', withAdvertiser(c, async (ctx, a) => fromResult(await c.listings.endMineAsync(a, ctx.params.id))));
+    r.add('POST', '/api/advertiser/buy', withAdvertiser(c, async (ctx, a) =>
+    {
+        const b = await bodyOf(ctx);
+        return fromResult(await c.billing.buyAsync(a, str(b.productId) as ProductId, str(b.listingId), str(b.method, 'card') as PayMethod), undefined, 201);
+    }));
+    r.add('GET', '/api/advertiser/statement', withAdvertiser(c, async (_ctx, a) => fromResult(await c.billing.statementAsync(a))));
+    r.add('POST', '/api/advertiser/settle', withAdvertiser(c, async (ctx, a) =>
+    {
+        const b = await bodyOf(ctx);
+        return fromResult(await c.billing.settleAsync(a, str(b.method, 'card') as PayMethod), (total) => ({ total }));
+    }));
+    r.add('GET', '/api/advertiser/inquiries', withAdvertiser(c, async (_ctx, a) => fromResult(await c.inquiries.receivedAsync(a))));
+    r.add('POST', '/api/advertiser/inquiries/:id/status', withAdvertiser(c, async (ctx, a) =>
+    {
+        const b = await bodyOf(ctx);
+        return fromResult(await c.inquiries.advertiserUpdateAsync(a, ctx.params.id, statusOf(b.status)));
+    }));
 
     // ---------- 관심 방 · 빈방 알림 ----------
     r.add('GET', '/api/me/favorites', withUser(c, async (_ctx, user) => fromResult(await c.saved.favoritesAsync(user))));
@@ -237,14 +338,47 @@ export function buildRouter(c: Container, adminKey: string | undefined): Router
         const b = await bodyOf(ctx);
         return fromResult(await c.community.setHiddenAsync(ctx.params.id, answerIdOf(b.answerId), b.hidden === true), () => ({ ok: true }));
     }));
-    r.add('GET', '/api/admin/applications', withAdmin(key, async () => fromResult(await c.applications.listAllAsync())));
-    r.add('POST', '/api/admin/applications/:id/decision', withAdmin(key, async (ctx) =>
+    r.add('GET', '/api/admin/inquiries', withAdmin(key, async () => fromResult(await c.inquiries.listAllAsync())));
+    r.add('GET', '/api/admin/stats', withAdmin(key, async () => fromResult(await c.inquiries.statsAsync())));
+    r.add('GET', '/api/admin/documents', withAdmin(key, async () => fromResult(await c.inquiries.listDocumentsAsync())));
+    r.add('POST', '/api/admin/documents/:userId/check', withAdmin(key, async (ctx) => fromResult(await c.inquiries.confirmDocumentAsync(ctx.params.userId))));
+    r.add('GET', '/api/admin/advertisers', withAdmin(key, async () => fromResult(await c.advertisers.listAllAsync())));
+    r.add('POST', '/api/admin/advertisers/:id/verify', withAdmin(key, async (ctx) =>
     {
         const b = await bodyOf(ctx);
-        const decision = b.decision === 'approve' || b.decision === 'reject' ? b.decision : 'hold';
-        return fromResult(await c.applications.decideAsync(ctx.params.id, decision));
+        return fromResult(await c.advertisers.verifyAsync(ctx.params.id, b.approve === true));
     }));
-    r.add('POST', '/api/admin/applications/:id/document-check', withAdmin(key, async (ctx) => fromResult(await c.applications.confirmDocumentAsync(ctx.params.id))));
+    r.add('GET', '/api/admin/listings', withAdmin(key, async () => fromResult(await c.listings.listAllAsync())));
+    r.add('POST', '/api/admin/listings/:id/approve', withAdmin(key, async (ctx) => fromResult(await c.listings.approveAsync(ctx.params.id))));
+    r.add('POST', '/api/admin/listings/:id/reject', withAdmin(key, async (ctx) =>
+    {
+        const b = await bodyOf(ctx);
+        return fromResult(await c.listings.rejectAsync(ctx.params.id, str(b.reason)));
+    }));
+    r.add('POST', '/api/admin/listings/:id/end', withAdmin(key, async (ctx) => fromResult(await c.listings.forceEndAsync(ctx.params.id))));
+    r.add('GET', '/api/admin/revenue', withAdmin(key, async () => fromResult(await c.billing.revenueAsync())));
+    r.add('GET', '/api/admin/proposals', withAdmin(key, async () => fromResult(await c.proposals.listAllAsync())));
+    r.add('POST', '/api/admin/proposals/:id/status', withAdmin(key, async (ctx) =>
+    {
+        const b = await bodyOf(ctx);
+        return fromResult(await c.proposals.setStatusAsync(ctx.params.id, str(b.status) as ProposalStatus));
+    }));
+    const perkInputOf = (b: Record<string, unknown>): PerkInput => ({
+        kind: str(b.kind) as PerkKind,
+        action: (b.action === 'link' ? 'link' : 'request') as PerkAction,
+        url: str(b.url),
+        providerKo: str(b.providerKo),
+        providerEn: str(b.providerEn),
+        titleKo: str(b.titleKo),
+        titleEn: str(b.titleEn),
+        descKo: str(b.descKo),
+        descEn: str(b.descEn),
+        active: b.active !== false,
+    });
+    r.add('GET', '/api/admin/perks', withAdmin(key, async () => fromResult(await c.perks.listAllAsync())));
+    r.add('GET', '/api/admin/perk-requests', withAdmin(key, async () => fromResult(await c.perks.listRequestsAsync())));
+    r.add('POST', '/api/admin/perks', withAdmin(key, async (ctx) => fromResult(await c.perks.createAsync(perkInputOf(await bodyOf(ctx))), undefined, 201)));
+    r.add('PUT', '/api/admin/perks/:id', withAdmin(key, async (ctx) => fromResult(await c.perks.updateAsync(ctx.params.id, perkInputOf(await bodyOf(ctx))))));
     r.add('GET', '/api/admin/reports', withAdmin(key, async (ctx) =>
     {
         const kind = (ctx.query.get('kind') ?? undefined) as ReportKind | undefined;
@@ -268,7 +402,6 @@ export function buildRouter(c: Container, adminKey: string | undefined): Router
         return fromResult(await c.reports.replyAsync(ctx.params.id, str(b.message)));
     }));
     r.add('GET', '/api/admin/demand', withAdmin(key, async () => fromResult(await c.search.demandStatsAsync())));
-    r.add('GET', '/api/admin/partners', withAdmin(key, async () => fromResult(await c.saved.partnersAsync())));
 
     return r;
 }

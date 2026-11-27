@@ -78,13 +78,3 @@ export interface SavedSearch
     readonly createdAt: string;
 }
 
-export interface PartnerInquiry
-{
-    readonly id: string;
-    readonly kind: 'owner' | 'building' | 'org';
-    readonly gu: string;
-    readonly rooms: number;
-    readonly contact: string;
-    readonly message: string;
-    readonly createdAt: string;
-}

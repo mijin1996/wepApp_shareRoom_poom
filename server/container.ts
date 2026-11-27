@@ -5,15 +5,25 @@ import { MemoryRecordDataSource, type IRecord } from './dataSources/recordDataSo
 import { JsonSeedDataSource } from './dataSources/seedDataSource';
 import { HousingRepository } from './repositories/housingRepository';
 import { RecordRepository } from './repositories/recordRepository';
+import adProductsJson from '../data/ad_products.json';
 import communityJson from '../data/community.json';
 import noticesJson from '../data/notices.json';
+import perksJson from '../data/perks.json';
+import type { ExamplePerkDto } from './dtos/adDto';
 import type { ExampleNoticeDto } from './dtos/noticeDto';
-import { NoticeService } from './services/noticeService';
 import type { ExampleQuestionDto } from './dtos/communityDto';
-import { ApplicationService } from './services/applicationService';
-import { CommunityService } from './services/communityService';
+import { toAdProduct } from './mappers/adMapper';
+import type { AdProduct, Advertiser } from './models/advertising';
+import type { User } from './models/people';
+import { AdvertiserService } from './services/advertiserService';
 import { AuthService } from './services/authService';
-import { ContractService } from './services/contractService';
+import { BillingService } from './services/billingService';
+import { CommunityService } from './services/communityService';
+import { InquiryService } from './services/inquiryService';
+import { ListingService } from './services/listingService';
+import { NoticeService } from './services/noticeService';
+import { PerkService } from './services/perkService';
+import { ProposalService } from './services/proposalService';
 import { ReportService } from './services/reportService';
 import { RoomService } from './services/roomService';
 import { SavedService } from './services/savedService';
@@ -27,6 +37,7 @@ export interface ContainerOptions
     readonly gateway?: IPaymentGateway;
     readonly communityExamples?: readonly ExampleQuestionDto[];   // 테스트는 [] 로 빈 상태에서 시작
     readonly noticeExamples?: readonly ExampleNoticeDto[];
+    readonly perkExamples?: readonly ExamplePerkDto[];
 }
 
 function memoryRepo<T extends IRecord>(): RecordRepository<T>
@@ -42,17 +53,25 @@ export function createContainer(options: ContainerOptions = {})
     const gateway = options.gateway ?? new MockPaymentGateway();
 
     const housing = new HousingRepository(new JsonSeedDataSource());
-    const apps = memoryRepo<import('./models/people').Application>();
+    const users = memoryRepo<User>();
+    const advertisers = memoryRepo<Advertiser>();
+    const products = adProductsJson.products.map(toAdProduct).filter((p): p is AdProduct => p !== null);
+    const listings = new ListingService(memoryRepo(), advertisers, housing, notifier, ids, clock);
+    const billing = new BillingService(products, memoryRepo(), advertisers, listings, gateway, ids, clock);
 
     return {
         notifier,
         rooms: new RoomService(housing, clock),
         search: new SearchService(housing, memoryRepo()),
-        auth: new AuthService(memoryRepo(), memoryRepo(), new MockIdentityVerifier(), ids),
-        applications: new ApplicationService(apps, housing, notifier, ids, clock),
-        contracts: new ContractService(apps, memoryRepo(), memoryRepo(), housing, gateway, notifier, ids, clock),
+        auth: new AuthService(users, memoryRepo(), new MockIdentityVerifier(), ids),
+        inquiries: new InquiryService(memoryRepo(), memoryRepo(), users, housing, billing, notifier, ids, clock),
+        advertisers: new AdvertiserService(advertisers, notifier, ids, clock),
+        listings,
+        billing,
+        perks: new PerkService(memoryRepo(), memoryRepo(), options.perkExamples ?? perksJson.perks, notifier, ids, clock),
+        proposals: new ProposalService(memoryRepo(), notifier, ids, clock),
         reports: new ReportService(memoryRepo(), notifier, ids, clock),
-        saved: new SavedService(memoryRepo(), memoryRepo(), memoryRepo(), notifier, ids, clock),
+        saved: new SavedService(memoryRepo(), memoryRepo(), ids, clock),
         notices: new NoticeService(memoryRepo(), options.noticeExamples ?? noticesJson.notices, ids, clock),
         community: new CommunityService(memoryRepo(), options.communityExamples ?? communityJson.questions, notifier, ids, clock),
     };

@@ -1,0 +1,8 @@
+{
+  "products": [
+    { "id": "AD_OWNER_30D", "for": "owner", "price": 9900, "days": 30, "name_ko": "집주인 광고 30일", "name_en": "Owner listing · 30 days", "desc_ko": "내 집 방 1개를 30일 동안 올려요. 계약이 되든 안 되든 금액은 같아요.", "desc_en": "List one room of your own home for 30 days. Same price whether or not you sign a contract." },
+    { "id": "AD_AGENT_MONTH", "for": "agent", "price": 50000, "days": 30, "name_ko": "공인중개사 월 구독", "name_en": "Agent monthly plan", "desc_ko": "구독 기간 동안 방을 개수 제한 없이 올려요.", "desc_en": "List as many rooms as you like during the plan." },
+    { "id": "AD_TOP_7D", "for": "both", "price": 10000, "days": 7, "name_ko": "상단 노출 7일", "name_en": "Top placement · 7 days", "desc_ko": "방 찾기 맨 위 \"추천\" 자리에 7일 동안 보여요.", "desc_en": "Shown in the \"Featured\" spot at the top of search for 7 days." },
+    { "id": "AD_LEAD", "for": "agent", "price": 1000, "days": 0, "name_ko": "문의 1건", "name_en": "Per inquiry", "desc_ko": "한부모 가족 문의를 1건 받을 때마다 청구돼요(계약 여부와 무관). 매달 말에 모아서 정산해요.", "desc_en": "Billed per inquiry received from a single-parent family, regardless of contract. Settled at the end of each month." }
+  ]
+}

@@ -13,6 +13,7 @@ export interface IHousingRepository
     getRoomAsync(id: string): Promise<Result<Room>>;
     setRoomStatusAsync(id: string, status: RoomStatus): Promise<Result<Room>>;
     getPlacesAsync(): Promise<Result<Place[]>>;
+    saveListingAsync(house: House, rooms: readonly Room[]): Promise<Result<House>>;   // 광고 승인 · 기간 변경
 }
 
 interface ICache
@@ -108,6 +109,21 @@ export class HousingRepository implements IHousingRepository
         const updated: Room = { ...current.data, status };
         this._cache.rooms.set(id, updated);
         return success(updated);
+    }
+
+    public async saveListingAsync(house: House, rooms: readonly Room[]): Promise<Result<House>>
+    {
+        const cache = await this.loadAsync();
+        if (!cache.ok)
+        {
+            return cache;
+        }
+        cache.data.houses.set(house.id, house);
+        for (const room of rooms)
+        {
+            cache.data.rooms.set(room.id, room);
+        }
+        return success(house);
     }
 
     public async getPlacesAsync(): Promise<Result<Place[]>>

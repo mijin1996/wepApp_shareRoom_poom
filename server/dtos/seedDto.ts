@@ -21,6 +21,20 @@ export interface RoomDto
     status?: string;
 }
 
+export interface ListingDto
+{
+    advertiser_id?: string;
+    listed_by?: string;
+    advertiser_name_ko?: string;
+    advertiser_name_en?: string;
+    agent_reg_no?: string;
+    live_until?: string;
+    top_until?: string;
+    note_ko?: string;
+    note_en?: string;
+    example?: boolean;
+}
+
 export interface HouseDto
 {
     id?: string;
@@ -33,9 +47,6 @@ export interface HouseDto
     dong_en?: string;
     dong_center?: number[];
     location?: number[];
-    address?: string;
-    entry_info_ko?: string;
-    entry_info_en?: string;
     building_type?: string;
     elevator?: boolean;
     no_stairs?: boolean;
@@ -52,6 +63,7 @@ export interface HouseDto
     rules_en?: string[];
     pois?: PoiDto[];
     rooms?: RoomDto[];
+    listing?: ListingDto;
 }
 
 export interface PlaceDto

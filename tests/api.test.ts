@@ -37,11 +37,11 @@ describe('API', () =>
         expect(Array.isArray(res.json.data)).toBe(true);
     });
 
-    it('로그인 없이 신청하면 AUTH_401', async () =>
+    it('로그인 없이 문의하면 AUTH_401', async () =>
     {
         const api = makeApi();
 
-        const res = await api('POST', '/api/applications', { roomId: 'r-mw-1' });
+        const res = await api('POST', '/api/inquiries', { roomId: 'r-mw-1' });
 
         expect(res.status).toBe(401);
         expect(res.json.error?.code).toBe('AUTH_401');
@@ -56,23 +56,51 @@ describe('API', () =>
         expect(res.status).toBe(403);
     });
 
-    it('본인인증 → 신청 → 서류 없이 계약 시도 → DOC_428', async () =>
+    it('본인인증 → 문의 → 서류 없이 보내기 → DOC_428, 서류함에 올린 뒤 보내기 성공', async () =>
     {
         // Given
         const api = makeApi();
         const auth = await api('POST', '/api/auth/verify', { name: '김한별', phone: '010-1234-5678', gender: 'f', lang: 'ko' });
-        const token = auth.json.data.token as string;
-        const bearer = { authorization: 'Bearer ' + token };
+        const bearer = { authorization: 'Bearer ' + (auth.json.data.token as string) };
 
         // When
-        const app = await api('POST', '/api/applications', { roomId: 'r-mw-1', moveInDate: '2026-11-27', months: 1, children: '0-5m', contactTime: '오후', consultLang: 'ko' }, bearer);
-        await api('POST', `/api/admin/applications/${app.json.data.id}/decision`, { decision: 'approve' }, { 'x-admin-key': ADMIN });
-        const sign = await api('POST', `/api/applications/${app.json.data.id}/sign`, { signature: '김한별' }, bearer);
+        const inquiry = await api('POST', '/api/inquiries', { roomId: 'r-mw-1', moveInDate: '2026-11-27', months: 1, children: '0-5m', contactTime: '오후', consultLang: 'ko', agree: true }, bearer);
+        const noDoc = await api('POST', '/api/inquiries/' + inquiry.json.data.id + '/share-document', {}, bearer);
+        await api('POST', '/api/me/document', { docType: 'single_parent' }, bearer);
+        const shared = await api('POST', '/api/inquiries/' + inquiry.json.data.id + '/share-document', {}, bearer);
 
         // Then
-        expect(app.status).toBe(201);
-        expect(sign.status).toBe(428);
-        expect(sign.json.error?.code).toBe('DOC_428');
+        expect(inquiry.status).toBe(201);
+        expect(noDoc.status).toBe(428);
+        expect(noDoc.json.error?.code).toBe('DOC_428');
+        expect(shared.json.data.docShared).toBe(true);
+    });
+
+    it('광고주 등록 전에는 광고 화면 API 가 AD_403, 광고 상품 · 혜택은 누구나 본다', async () =>
+    {
+        const api = makeApi();
+        const auth = await api('POST', '/api/auth/verify', { name: '박집주인', phone: '010-7777-8888', gender: 'm', lang: 'ko' });
+        const bearer = { authorization: 'Bearer ' + (auth.json.data.token as string) };
+
+        const me = await api('GET', '/api/advertiser/me', undefined, bearer);
+        const listings = await api('GET', '/api/advertiser/listings', undefined, bearer);
+        const products = await api('GET', '/api/ad-products');
+        const perks = await api('GET', '/api/perks');
+
+        expect(me.json.data.advertiser).toBeNull();
+        expect(listings.status).toBe(403);
+        expect(listings.json.error?.code).toBe('AD_403');
+        expect(products.json.data).toHaveLength(4);
+        expect(perks.json.data.length).toBeGreaterThan(0);
+    });
+
+    it('문의 메뉴 제안은 로그인 없이 201', async () =>
+    {
+        const api = makeApi();
+
+        const res = await api('POST', '/api/proposals', { kind: 'partner', org: '예시 이사', contact: 'hello@example.com', message: '제휴 할인 제안드려요' });
+
+        expect(res.status).toBe(201);
     });
 
     it('잘못된 JSON 본문은 COMMON_400', async () =>
