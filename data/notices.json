@@ -1,0 +1,26 @@
+{
+  "$schema": "../schema/notices.schema.json",
+  "notices": [
+    {
+      "id": "n-ex-1", "category": "service", "pinned": true, "days_ago": 0,
+      "title_ko": "품 테스트판을 열었어요",
+      "body_ko": "지금은 테스트판이라 방 · 신청 · 결제가 모두 예시예요. 진짜 개인정보나 카드 정보는 넣지 마세요.\n불편한 점은 오른쪽 위 💬 버튼으로 알려 주세요.",
+      "title_en": "The Poom test build is open",
+      "body_en": "This is a test build, so rooms, applications and payments are all examples. Please don't enter real personal or card details.\nTell us about anything inconvenient with the 💬 button at the top right."
+    },
+    {
+      "id": "n-ex-2", "category": "house", "pinned": false, "days_ago": 2,
+      "title_ko": "망원 하우스 12월 정기 소독 안내",
+      "body_ko": "12월 첫째 주 토요일 오전 10시 ~ 12시에 공용 공간 소독이 있어요. 아이 장난감은 방 안에 넣어 주세요.",
+      "title_en": "Mangwon house: December pest control",
+      "body_en": "Shared spaces will be disinfected on the first Saturday of December, 10 am to noon. Please keep children's toys inside your room."
+    },
+    {
+      "id": "n-ex-3", "category": "event", "pinned": false, "days_ago": 5,
+      "title_ko": "첫 달 관리비 반값 (예시)",
+      "body_ko": "12월에 계약하는 가족은 첫 달 관리비를 반만 받아요. 상담 때 말씀해 주세요.",
+      "title_en": "",
+      "body_en": ""
+    }
+  ]
+}

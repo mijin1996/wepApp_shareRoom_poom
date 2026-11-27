@@ -5,6 +5,8 @@ import type { Lang } from '../models/housing';
 import type { ReportKind, ReportStatus, TrailEntry } from '../models/feedback';
 import type { DocType, Gender, IdType, PayMethod, Urgency, User } from '../models/people';
 import { TOPICS, type Topic } from '../models/community';
+import type { NoticeCategory } from '../models/notice';
+import type { NoticeInput } from '../services/noticeService';
 import faqJson from '../../data/faq.json';
 import helpJson from '../../data/help_contacts.json';
 import kindsJson from '../../data/report_kinds.json';
@@ -177,6 +179,10 @@ export function buildRouter(c: Container, adminKey: string | undefined): Router
         return fromResult(await c.reports.confirmAsync(user, ctx.params.id, b.resolved === true), () => ({ ok: true }));
     }));
 
+    // ---------- 공지사항 ----------
+    r.add('GET', '/api/notices', async () => fromResult(await c.notices.listAsync()));
+    r.add('GET', '/api/notices/:id', async (ctx) => fromResult(await c.notices.getAsync(ctx.params.id)));
+
     // ---------- 커뮤니티 (묻고 답하기) ----------
     const topicOf = (value: unknown): Topic | undefined => (TOPICS.includes(value as Topic) ? (value as Topic) : undefined);
     const answerIdOf = (value: unknown): string | undefined => (typeof value === 'string' && value ? value : undefined);
@@ -208,6 +214,18 @@ export function buildRouter(c: Container, adminKey: string | undefined): Router
     }));
 
     // ---------- 운영 콘솔 ----------
+    const noticeInputOf = (b: Record<string, unknown>): NoticeInput => ({
+        category: str(b.category) as NoticeCategory,
+        titleKo: str(b.titleKo),
+        bodyKo: str(b.bodyKo),
+        titleEn: str(b.titleEn),
+        bodyEn: str(b.bodyEn),
+        pinned: b.pinned === true,
+        published: b.published !== false,
+    });
+    r.add('GET', '/api/admin/notices', withAdmin(key, async () => fromResult(await c.notices.listAllAsync())));
+    r.add('POST', '/api/admin/notices', withAdmin(key, async (ctx) => fromResult(await c.notices.createAsync(noticeInputOf(await bodyOf(ctx))), undefined, 201)));
+    r.add('PUT', '/api/admin/notices/:id', withAdmin(key, async (ctx) => fromResult(await c.notices.updateAsync(ctx.params.id, noticeInputOf(await bodyOf(ctx))))));
     r.add('GET', '/api/admin/community', withAdmin(key, async () => fromResult(await c.community.listAllAsync())));
     r.add('POST', '/api/admin/community/:id/answers', withAdmin(key, async (ctx) =>
     {

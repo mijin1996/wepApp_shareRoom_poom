@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "공지사항 예시 (Mock 씨앗)",
+  "type": "object",
+  "required": ["notices"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "notices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "category", "pinned", "title_ko", "body_ko"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^n-ex-" },
+          "category": { "enum": ["service", "house", "event"] },
+          "pinned": { "type": "boolean" },
+          "days_ago": { "type": "integer", "minimum": 0 },
+          "title_ko": { "type": "string", "minLength": 2, "maxLength": 80 },
+          "body_ko": { "type": "string", "minLength": 2, "maxLength": 3000 },
+          "title_en": { "type": "string", "maxLength": 120 },
+          "body_en": { "type": "string", "maxLength": 4000 }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -6,6 +6,9 @@ import { JsonSeedDataSource } from './dataSources/seedDataSource';
 import { HousingRepository } from './repositories/housingRepository';
 import { RecordRepository } from './repositories/recordRepository';
 import communityJson from '../data/community.json';
+import noticesJson from '../data/notices.json';
+import type { ExampleNoticeDto } from './dtos/noticeDto';
+import { NoticeService } from './services/noticeService';
 import type { ExampleQuestionDto } from './dtos/communityDto';
 import { ApplicationService } from './services/applicationService';
 import { CommunityService } from './services/communityService';
@@ -23,6 +26,7 @@ export interface ContainerOptions
     readonly notifier?: INotifier;
     readonly gateway?: IPaymentGateway;
     readonly communityExamples?: readonly ExampleQuestionDto[];   // 테스트는 [] 로 빈 상태에서 시작
+    readonly noticeExamples?: readonly ExampleNoticeDto[];
 }
 
 function memoryRepo<T extends IRecord>(): RecordRepository<T>
@@ -49,6 +53,7 @@ export function createContainer(options: ContainerOptions = {})
         contracts: new ContractService(apps, memoryRepo(), memoryRepo(), housing, gateway, notifier, ids, clock),
         reports: new ReportService(memoryRepo(), notifier, ids, clock),
         saved: new SavedService(memoryRepo(), memoryRepo(), memoryRepo(), notifier, ids, clock),
+        notices: new NoticeService(memoryRepo(), options.noticeExamples ?? noticesJson.notices, ids, clock),
         community: new CommunityService(memoryRepo(), options.communityExamples ?? communityJson.questions, notifier, ids, clock),
     };
 }
